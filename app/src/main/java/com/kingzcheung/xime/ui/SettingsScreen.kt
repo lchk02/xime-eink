@@ -76,6 +76,12 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.kingzcheung.xime.viewmodel.SchemaSettingsViewModel
+import com.kingzcheung.xime.viewmodel.ThemeSettingsViewModel
+import com.kingzcheung.xime.viewmodel.KeyEffectSettingsViewModel
+import com.kingzcheung.xime.viewmodel.DictionarySettingsViewModel
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -482,18 +488,15 @@ fun SchemaSettingsContent(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
-    val schemas = remember { SchemaConfigHelper.loadSchemas(context) }
-    var currentSchema by remember { mutableStateOf(SettingsPreferences.getCurrentSchema(context)) }
-    var isDeploying by remember { mutableStateOf(false) }
-    var downloadingSchema by remember { mutableStateOf<String?>(null) }
+    val viewModel: SchemaSettingsViewModel = viewModel()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
-    var downloadStatusMap by remember { 
-        mutableStateOf(schemas.associate { schema ->
-            schema.schemaId to !SchemaConfigHelper.needsDownload(context, schema.schemaId)
-        })
+    LaunchedEffect(uiState.toastMessage) {
+        uiState.toastMessage?.let { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            viewModel.clearToast()
+        }
     }
-    
-    val scope = rememberCoroutineScope()
     
     Column(
         modifier = Modifier
@@ -530,60 +533,19 @@ fun SchemaSettingsContent(
         ) {
             item {
                 SettingsSection(title = "方案列表", content = {
-                    schemas.forEachIndexed { index, schema ->
-                        val isDownloaded = downloadStatusMap[schema.schemaId] ?: false
+                    uiState.schemas.forEachIndexed { index, schema ->
+                        val isDownloaded = uiState.downloadStatus[schema.schemaId] ?: false
                         
                         SchemaItem(
                             schema = schema,
-                            isSelected = schema.schemaId == currentSchema && isDownloaded,
+                            isSelected = schema.schemaId == uiState.currentSchema && isDownloaded,
                             isDownloaded = isDownloaded,
-                            isLoading = downloadingSchema == schema.schemaId,
-                            onClick = {
-                                if (isDownloaded && currentSchema != schema.schemaId) {
-                                    currentSchema = schema.schemaId
-                                    SettingsPreferences.setCurrentSchema(context, schema.schemaId)
-                                    
-                                    if (com.kingzcheung.xime.rime.RimeEngine.isInitialized()) {
-                                        val engine = com.kingzcheung.xime.rime.RimeEngine.getInstance()
-                                        val availableSchemas = engine.getAvailableSchemas()
-                                        
-                                        if (schema.schemaId in availableSchemas) {
-                                            engine.switchSchema(schema.schemaId)
-                                            Toast.makeText(context, "已切换到${schema.name}", Toast.LENGTH_SHORT).show()
-                                        } else {
-                                            Toast.makeText(context, "请点击「部署」按钮", Toast.LENGTH_SHORT).show()
-                                        }
-                                    }
-                                }
-                            },
-                            onDownload = {
-                                scope.launch(Dispatchers.IO) {
-                                    downloadingSchema = schema.schemaId
-                                    val success = SchemaConfigHelper.downloadSchema(context, schema.schemaId)
-                                    downloadingSchema = null
-                                    withContext(Dispatchers.Main) {
-                                        if (success) {
-                                            downloadStatusMap = downloadStatusMap + (schema.schemaId to true)
-                                            Toast.makeText(context, "${schema.name}下载完成，请部署", Toast.LENGTH_SHORT).show()
-                                        } else {
-                                            Toast.makeText(context, "${schema.name}下载失败", Toast.LENGTH_SHORT).show()
-                                        }
-                                    }
-                                }
-                            },
-                            onUpdate = {
-                                scope.launch(Dispatchers.IO) {
-                                    downloadingSchema = schema.schemaId
-                                    val success = SchemaConfigHelper.downloadSchema(context, schema.schemaId)
-                                    downloadingSchema = null
-                                    withContext(Dispatchers.Main) {
-                                        downloadStatusMap = downloadStatusMap + (schema.schemaId to true)
-                                        Toast.makeText(context, if (success) "${schema.name}更新完成" else "${schema.name}更新失败", Toast.LENGTH_SHORT).show()
-                                    }
-                                }
-                            }
+                            isLoading = uiState.downloadingSchema == schema.schemaId,
+                            onClick = { viewModel.selectSchema(schema) },
+                            onDownload = { viewModel.downloadSchema(schema) },
+                            onUpdate = { viewModel.updateSchema(schema) }
                         )
-                        if (index < schemas.size - 1) {
+                        if (index < uiState.schemas.size - 1) {
                             HorizontalDivider(
                                 modifier = Modifier.padding(start = 16.dp, end = 16.dp),
                                 thickness = 0.5.dp,
@@ -600,22 +562,11 @@ fun SchemaSettingsContent(
             
             item {
                 Button(
-                    onClick = {
-                        if (!isDeploying) {
-                            scope.launch(Dispatchers.IO) {
-                                isDeploying = true
-                                val success = com.kingzcheung.xime.rime.RimeEngine.getInstance().deploy()
-                                isDeploying = false
-                                withContext(Dispatchers.Main) {
-                                    Toast.makeText(context, if (success) "部署完成" else "部署失败", Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        }
-                    },
+                    onClick = { viewModel.deploySchema() },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = !isDeploying && downloadingSchema == null
+                    enabled = !uiState.isDeploying && uiState.downloadingSchema == null
                 ) {
-                    if (isDeploying) {
+                    if (uiState.isDeploying) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(20.dp),
                             strokeWidth = 2.dp,
@@ -648,10 +599,8 @@ fun ThemeSettingsContent(
     onBack: () -> Unit,
     onThemeChanged: () -> Unit = {}
 ) {
-    val context = LocalContext.current
-    var currentTheme by remember { mutableStateOf(SettingsPreferences.getDarkMode(context)) }
-    var currentColorTheme by remember { mutableStateOf(SettingsPreferences.getKeyboardTheme(context)) }
-    val colorThemes = KeyboardThemes.themes
+    val viewModel: ThemeSettingsViewModel = viewModel()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
     Column(
         modifier = Modifier
@@ -702,22 +651,20 @@ fun ThemeSettingsContent(
                 ) {
                     ThemeCard(
                         title = "浅色",
-                        isSelected = currentTheme == 0,
+                        isSelected = uiState.darkMode == 0,
                         isDark = false,
                         onClick = {
-                            currentTheme = 0
-                            SettingsPreferences.setDarkMode(context, 0)
+                            viewModel.setDarkMode(0)
                             onThemeChanged()
                         },
                         modifier = Modifier.weight(1f)
                     )
                     ThemeCard(
                         title = "深色",
-                        isSelected = currentTheme == 1,
+                        isSelected = uiState.darkMode == 1,
                         isDark = true,
                         onClick = {
-                            currentTheme = 1
-                            SettingsPreferences.setDarkMode(context, 1)
+                            viewModel.setDarkMode(1)
                             onThemeChanged()
                         },
                         modifier = Modifier.weight(1f)
@@ -744,9 +691,8 @@ Text(
                     )
             }
             
-            item {
-                val rows = colorThemes.chunked(4)
-                rows.forEach { rowThemes ->
+            uiState.colorThemes.chunked(4).forEach { rowThemes ->
+                item {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -754,11 +700,10 @@ Text(
                         rowThemes.forEach { theme ->
                             KeyboardThemeCard(
                                 theme = theme,
-                                isSelected = currentColorTheme == theme.id,
-                                isDark = currentTheme == 1,
+                                isSelected = uiState.colorTheme == theme.id,
+                                isDark = uiState.darkMode == 1,
                                 onClick = {
-                                    currentColorTheme = theme.id
-                                    SettingsPreferences.setKeyboardTheme(context, theme.id)
+                                    viewModel.setColorTheme(theme.id)
                                     onThemeChanged()
                                 },
                                 modifier = Modifier.weight(1f)
@@ -768,6 +713,9 @@ Text(
                             Spacer(modifier = Modifier.weight(1f))
                         }
                     }
+                }
+                
+                item {
                     Spacer(modifier = Modifier.height(8.dp))
                 }
             }
@@ -790,11 +738,8 @@ Text(
 fun KeyEffectSettingsContent(
     onBack: () -> Unit
 ) {
-    val context = LocalContext.current
-    var soundEnabled by remember { mutableStateOf(SettingsPreferences.isSoundEnabled(context)) }
-    var soundVolume by remember { mutableStateOf(SettingsPreferences.getSoundVolume(context)) }
-    var vibrationEnabled by remember { mutableStateOf(SettingsPreferences.isVibrationEnabled(context)) }
-    var vibrationIntensity by remember { mutableStateOf(SettingsPreferences.getVibrationIntensity(context)) }
+    val viewModel: KeyEffectSettingsViewModel = viewModel()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
     Column(
         modifier = Modifier
@@ -850,15 +795,12 @@ fun KeyEffectSettingsContent(
                             )
                         }
                         Switch(
-                            checked = soundEnabled,
-                            onCheckedChange = { 
-                                soundEnabled = it
-                                SettingsPreferences.setSoundEnabled(context, it)
-                            }
+                            checked = uiState.soundEnabled,
+                            onCheckedChange = { viewModel.setSoundEnabled(it) }
                         )
                     }
                     
-                    if (soundEnabled) {
+                    if (uiState.soundEnabled) {
                         HorizontalDivider(
                             modifier = Modifier.padding(start = 16.dp),
                             thickness = 0.5.dp,
@@ -878,18 +820,15 @@ fun KeyEffectSettingsContent(
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "$soundVolume%",
+                                    text = "${uiState.soundVolume}%",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.primary
                                 )
                             }
                             Spacer(modifier = Modifier.height(8.dp))
                             Slider(
-                                value = soundVolume.toFloat(),
-                                onValueChange = { 
-                                    soundVolume = it.toInt()
-                                    SettingsPreferences.setSoundVolume(context, soundVolume)
-                                },
+                                value = uiState.soundVolume.toFloat(),
+                                onValueChange = { viewModel.setSoundVolume(it.toInt()) },
                                 valueRange = 0f..100f,
                                 steps = 10
                             )
@@ -919,15 +858,12 @@ fun KeyEffectSettingsContent(
                             )
                         }
                         Switch(
-                            checked = vibrationEnabled,
-                            onCheckedChange = { 
-                                vibrationEnabled = it
-                                SettingsPreferences.setVibrationEnabled(context, it)
-                            }
+                            checked = uiState.vibrationEnabled,
+                            onCheckedChange = { viewModel.setVibrationEnabled(it) }
                         )
                     }
                     
-                    if (vibrationEnabled) {
+                    if (uiState.vibrationEnabled) {
                         HorizontalDivider(
                             modifier = Modifier.padding(start = 16.dp),
                             thickness = 0.5.dp,
@@ -947,18 +883,15 @@ fun KeyEffectSettingsContent(
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "$vibrationIntensity%",
+                                    text = "${uiState.vibrationIntensity}%",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.primary
                                 )
                             }
                             Spacer(modifier = Modifier.height(8.dp))
                             Slider(
-                                value = vibrationIntensity.toFloat(),
-                                onValueChange = { 
-                                    vibrationIntensity = it.toInt()
-                                    SettingsPreferences.setVibrationIntensity(context, vibrationIntensity)
-                                },
+                                value = uiState.vibrationIntensity.toFloat(),
+                                onValueChange = { viewModel.setVibrationIntensity(it.toInt()) },
                                 valueRange = 0f..100f,
                                 steps = 10
                             )
@@ -975,29 +908,8 @@ fun KeyEffectSettingsContent(
 fun DictionarySettingsContent(
     onBack: () -> Unit
 ) {
-    val context = LocalContext.current
-    val currentSchema = SettingsPreferences.getCurrentSchema(context)
-    val schemaInfo = SchemaConfigHelper.loadSchemas(context).find { it.schemaId == currentSchema }
-    
-    var searchQuery by remember { mutableStateOf("") }
-    var allEntries by remember { mutableStateOf<List<DictEntry>>(emptyList()) }
-    var displayedEntries by remember { mutableStateOf<List<DictEntry>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(true) }
-    
-    LaunchedEffect(currentSchema) {
-        isLoading = true
-        allEntries = DictionaryHelper.loadDictionary(context, currentSchema)
-        displayedEntries = allEntries.take(50)
-        isLoading = false
-    }
-    
-    LaunchedEffect(searchQuery) {
-        displayedEntries = if (searchQuery.isEmpty()) {
-            allEntries.take(50)
-        } else {
-            DictionaryHelper.searchDictionary(allEntries, searchQuery)
-        }
-    }
+    val viewModel: DictionarySettingsViewModel = viewModel()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
     Column(
         modifier = Modifier
@@ -1012,7 +924,7 @@ fun DictionarySettingsContent(
                         style = MaterialTheme.typography.titleMedium
                     )
                     Text(
-                        text = schemaInfo?.name ?: currentSchema,
+                        text = uiState.schemaName,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -1053,13 +965,13 @@ fun DictionarySettingsContent(
                     Icon(
                         Icons.Default.Search,
                         contentDescription = null,
-                        tint = if (searchQuery.isNotEmpty()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        tint = if (uiState.searchQuery.isNotEmpty()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(22.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     BasicTextField(
-                        value = searchQuery,
-                        onValueChange = { searchQuery = it },
+                        value = uiState.searchQuery,
+                        onValueChange = { viewModel.setSearchQuery(it) },
                         modifier = Modifier.weight(1f),
                         singleLine = true,
                         textStyle = MaterialTheme.typography.bodyLarge.copy(
@@ -1067,7 +979,7 @@ fun DictionarySettingsContent(
                         ),
                         decorationBox = { innerTextField ->
                             Box {
-                                if (searchQuery.isEmpty()) {
+                                if (uiState.searchQuery.isEmpty()) {
                                     Text(
                                         "搜索词条或编码",
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1078,10 +990,10 @@ fun DictionarySettingsContent(
                             }
                         }
                     )
-                    if (searchQuery.isNotEmpty()) {
+                    if (uiState.searchQuery.isNotEmpty()) {
                         Spacer(modifier = Modifier.width(8.dp))
                         IconButton(
-                            onClick = { searchQuery = "" },
+                            onClick = { viewModel.clearSearch() },
                             modifier = Modifier.size(24.dp)
                         ) {
                             Icon(
@@ -1101,7 +1013,7 @@ fun DictionarySettingsContent(
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
         ) {
-            if (isLoading) {
+            if (uiState.isLoading) {
                 Box(
                     modifier = Modifier.fillMaxWidth().weight(1f),
                     contentAlignment = Alignment.Center
@@ -1110,19 +1022,19 @@ fun DictionarySettingsContent(
                 }
             } else {
                 Text(
-                    text = "共 ${allEntries.size} 条词条${if (searchQuery.isNotEmpty()) "，搜索结果 ${displayedEntries.size} 条" else ""}",
+                    text = "共 ${uiState.allEntries.size} 条词条${if (uiState.searchQuery.isNotEmpty()) "，搜索结果 ${uiState.displayedEntries.size} 条" else ""}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
                 
-                if (displayedEntries.isEmpty()) {
+                if (uiState.displayedEntries.isEmpty()) {
                     Box(
                         modifier = Modifier.fillMaxWidth().weight(1f),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = if (searchQuery.isEmpty()) "暂无词条" else "未找到匹配词条",
+                            text = if (uiState.searchQuery.isEmpty()) "暂无词条" else "未找到匹配词条",
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -1131,7 +1043,7 @@ fun DictionarySettingsContent(
                         LazyColumn(
                             modifier = Modifier.fillMaxWidth().weight(1f)
                         ) {
-                            items(displayedEntries.take(50)) { entry ->
+                            items(uiState.displayedEntries.take(50)) { entry ->
                                 DictEntryItem(entry = entry)
                             }
                         }
@@ -1139,7 +1051,7 @@ fun DictionarySettingsContent(
                 }
             }
         }
-    }
+}
 }
 
 @Composable

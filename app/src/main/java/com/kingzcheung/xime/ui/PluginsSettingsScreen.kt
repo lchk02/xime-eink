@@ -70,10 +70,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kingzcheung.xime.plugin.core.model.PluginInfo
 import com.kingzcheung.xime.plugin.core.runtime.PluginManager
 import com.kingzcheung.xime.plugin.core.security.PluginErrorLog
 import com.kingzcheung.xime.settings.SettingsPreferences
+import com.kingzcheung.xime.viewmodel.PluginsSettingsViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -85,40 +88,9 @@ fun PluginsSettingsContent(
     onNavigateToPluginSettings: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    
-    var extensions by remember { mutableStateOf<List<PluginInfo>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(true) }
-    var errorMsg by remember { mutableStateOf<String?>(null) }
-    
-    // 收集已加载插件的状态（运行中）
-    val loadedPlugins by PluginManager.loadedPluginsFlow.collectAsState()
-    
-    fun refreshPlugins() {
-        isLoading = true
-        errorMsg = null
-        scope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    val scanned = PluginManager.scanAndInstallSystemPlugins()
-                    Log.d("PluginsSettings", "Scanned $scanned new plugins")
-                    val loaded = PluginManager.loadEnabledPlugins()
-                    Log.d("PluginsSettings", "Loaded $loaded plugins")
-                }
-                extensions = PluginManager.getAllInstallPlugins()
-                Log.d("PluginsSettings", "Loaded ${extensions.size} plugins: ${extensions.map { it.id }}")
-            } catch (e: Exception) {
-                e.printStackTrace()
-                errorMsg = e.message
-            } finally {
-                isLoading = false
-            }
-        }
-    }
-    
-    LaunchedEffect(Unit) {
-        refreshPlugins()
-    }
+    val viewModel: PluginsSettingsViewModel = viewModel()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val loadedPlugins by viewModel.loadedPlugins.collectAsState()
     
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -134,7 +106,7 @@ fun PluginsSettingsContent(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { refreshPlugins() }) {
+                    IconButton(onClick = { viewModel.refreshPlugins() }) {
                         Icon(
                             imageVector = Icons.Default.Refresh,
                             contentDescription = "刷新"
@@ -157,7 +129,7 @@ fun PluginsSettingsContent(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            if (isLoading) {
+            if (uiState.isLoading) {
                 item {
                     Box(
                         modifier = Modifier.fillMaxWidth(),
@@ -166,15 +138,15 @@ fun PluginsSettingsContent(
                         CircularProgressIndicator()
                     }
                 }
-            } else if (errorMsg != null) {
+            } else if (uiState.errorMsg != null) {
                 item {
                     Text(
-                        text = "加载失败: $errorMsg",
+                        text = "加载失败: ${uiState.errorMsg}",
                         color = MaterialTheme.colorScheme.error
                     )
                 }
             } else {
-                if (extensions.isEmpty()) {
+                if (uiState.extensions.isEmpty()) {
                     item {
                         Box(
                             modifier = Modifier
@@ -208,19 +180,20 @@ fun PluginsSettingsContent(
                 } else {
                     item {
                         Text(
-                            text = "已安装插件 (${extensions.size})",
+                            text = "已安装插件 (${uiState.extensions.size})",
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
                     }
                     
-                    items(extensions, key = { it.id }) { extension ->
+                    items(uiState.extensions, key = { it.id }) { extension ->
                         val isRunning = loadedPlugins.containsKey(extension.id)
                         ExtensionItem(
                             extension = extension,
                             pluginInstance = PluginManager.getPluginInstance(extension.id),
                             isRunning = isRunning,
+                            viewModel = viewModel,
                             onClick = { onNavigateToPluginSettings(extension.id) }
                         )
                     }
@@ -246,11 +219,11 @@ private fun ExtensionItem(
     extension: PluginInfo,
     pluginInstance: Any?,
     isRunning: Boolean,
+    viewModel: PluginsSettingsViewModel,
     onClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    var isEnabled by remember { mutableStateOf(SettingsPreferences.isPluginEnabled(context, extension.id)) }
+    var isEnabled by remember { mutableStateOf(viewModel.isPluginEnabled(extension.id)) }
     var showErrorDialog by remember { mutableStateOf(false) }
     var isExpanded by remember { mutableStateOf(false) }
     
@@ -412,20 +385,7 @@ private fun ExtensionItem(
                                 checked = isEnabled,
                                 onCheckedChange = { enabled ->
                                     isEnabled = enabled
-                                    SettingsPreferences.setPluginEnabled(context, extension.id, enabled)
-                                    
-                                    scope.launch {
-                                        try {
-                                            PluginManager.setPluginEnabled(extension.id, enabled)
-                                            if (enabled) {
-                                                PluginManager.launchPlugin(extension.id)
-                                            } else {
-                                                PluginManager.unloadPlugin(extension.id)
-                                            }
-                                        } catch (e: Exception) {
-                                            Log.e("PluginsSettings", "Failed to toggle plugin", e)
-                                        }
-                                    }
+                                    viewModel.setPluginEnabled(extension.id, enabled)
                                 },
                                 colors = SwitchDefaults.colors(
                                     checkedThumbColor = MaterialTheme.colorScheme.primary,

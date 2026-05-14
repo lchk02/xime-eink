@@ -1,6 +1,5 @@
 package com.kingzcheung.xime.ui
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -44,23 +43,14 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.kingzcheung.xime.association.AssociationManager
-import com.kingzcheung.xime.settings.SettingsPreferences
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.io.File
-import java.io.FileOutputStream
-import java.net.URL
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.kingzcheung.xime.viewmodel.SmartPredictionSettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,134 +58,19 @@ fun SmartPredictionSettingsContent(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val viewModel: SmartPredictionSettingsViewModel = viewModel()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
-    var isEnabled by remember { mutableStateOf(SettingsPreferences.isSmartPredictionEnabled(context)) }
-    var isInitialized by remember { mutableStateOf(AssociationManager.isInitialized()) }
-    var cacheSize by remember { mutableStateOf(0) }
-    var isSaving by remember { mutableStateOf(false) }
-    var isLoading by remember { mutableStateOf(false) }
-    var isDownloading by remember { mutableStateOf(false) }
-    var downloadProgress by remember { mutableStateOf(0f) }
-    var downloadStatus by remember { mutableStateOf("") }
-    var modelRepo by remember { mutableStateOf(SettingsPreferences.getPredictionModelRepo(context)) }
-    var hasModel by remember { mutableStateOf(false) }
-    var showRepoDialog by remember { mutableStateOf(false) }
-    var tempRepo by remember { mutableStateOf(modelRepo) }
-    
-    fun checkModelState() {
-        val vocabFile = context.filesDir.resolve("vocab.json")
-        val modelFile = context.filesDir.resolve("model_int8_dynamic.onnx")
-        hasModel = vocabFile.exists() && modelFile.exists()
-    }
-    
-    fun downloadModelFiles() {
-        scope.launch {
-            isDownloading = true
-            downloadProgress = 0f
-            downloadStatus = "准备下载..."
-            
-            try {
-                withContext(Dispatchers.IO) {
-                    val baseUrl = modelRepo.trimEnd('/')
-                    
-                    val filesToDownload = listOf(
-                        "vocab.json" to File(context.filesDir, "vocab.json"),
-                        "model_int8_dynamic.onnx" to File(context.filesDir, "model_int8_dynamic.onnx")
-                    )
-                    
-                    val totalFiles = filesToDownload.size
-                    
-                    filesToDownload.forEachIndexed { index, (fileName, targetFile) ->
-                        downloadStatus = "下载 $fileName (${index + 1}/$totalFiles)..."
-                        
-                        val downloadUrl = when {
-                            baseUrl.contains("modelscope.cn") -> {
-                                val cleanUrl = baseUrl.trimEnd('/')
-                                "$cleanUrl/resolve/master/$fileName"
-                            }
-                            else -> "$baseUrl/$fileName"
-                        }
-                        
-                        URL(downloadUrl).openStream().use { input ->
-                            FileOutputStream(targetFile).use { output ->
-                                input.copyTo(output)
-                            }
-                        }
-                        
-                        downloadProgress = (index + 1).toFloat() / totalFiles
-                    }
-                }
-                
-                downloadStatus = "下载完成"
-                checkModelState()
-                
-                withContext(Dispatchers.IO) {
-                    if (isInitialized) {
-                        AssociationManager.release()
-                        isInitialized = false
-                    }
-                }
-                
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "模型下载成功", Toast.LENGTH_SHORT).show()
-                    
-                    if (isEnabled) {
-                        isLoading = true
-                        val success = withContext(Dispatchers.IO) {
-                            AssociationManager.initialize(context)
-                        }
-                        isInitialized = success
-                        isLoading = false
-                        
-                        if (!success) {
-                            Toast.makeText(context, "模型加载失败，请检查模型文件", Toast.LENGTH_LONG).show()
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                downloadStatus = "下载失败: ${e.message}"
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "下载失败: ${e.message}", Toast.LENGTH_LONG).show()
-                }
-            } finally {
-                isDownloading = false
-                downloadProgress = 0f
-                downloadStatus = ""
-            }
+    LaunchedEffect(uiState.toastMessage) {
+        uiState.toastMessage?.let { message ->
+            viewModel.showToast(message)
+            viewModel.clearToast()
         }
     }
     
-    LaunchedEffect(Unit) {
-        checkModelState()
-        cacheSize = AssociationManager.getCacheSize()
-        
-        if (isEnabled && !hasModel) {
-            isEnabled = false
-            SettingsPreferences.setSmartPredictionEnabled(context, false)
-            Toast.makeText(context, "模型文件不存在，已自动关闭智能联想", Toast.LENGTH_LONG).show()
-        }
-    }
-    
-    LaunchedEffect(isEnabled) {
-        if (isEnabled && !isInitialized && hasModel) {
-            isLoading = true
-            val success = withContext(Dispatchers.IO) {
-                AssociationManager.initialize(context)
-            }
-            isInitialized = success
-            isLoading = false
-        } else if (!isEnabled && isInitialized) {
-            withContext(Dispatchers.IO) {
-                AssociationManager.release()
-            }
-            isInitialized = false
-        }
-    }
-    
-    if (showRepoDialog) {
+    if (uiState.showRepoDialog) {
         AlertDialog(
-            onDismissRequest = { showRepoDialog = false },
+            onDismissRequest = { viewModel.hideRepoDialog() },
             title = { Text("模型仓库地址") },
             text = {
                 Column {
@@ -206,8 +81,8 @@ fun SmartPredictionSettingsContent(
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     OutlinedTextField(
-                        value = tempRepo,
-                        onValueChange = { tempRepo = it },
+                        value = uiState.tempRepo,
+                        onValueChange = { viewModel.setTempRepo(it) },
                         modifier = Modifier.fillMaxWidth(),
                         placeholder = { 
                             Text(
@@ -227,16 +102,12 @@ fun SmartPredictionSettingsContent(
                 }
             },
             confirmButton = {
-                TextButton(onClick = {
-                    modelRepo = tempRepo
-                    SettingsPreferences.setPredictionModelRepo(context, tempRepo)
-                    showRepoDialog = false
-                }) {
+                TextButton(onClick = { viewModel.saveRepo() }) {
                     Text("保存")
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showRepoDialog = false }) {
+                TextButton(onClick = { viewModel.hideRepoDialog() }) {
                     Text("取消")
                 }
             }
@@ -292,22 +163,15 @@ fun SmartPredictionSettingsContent(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                        if (isLoading) {
+                        if (uiState.isLoading) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(24.dp),
                                 strokeWidth = 2.dp
                             )
                         } else {
                             Switch(
-                                checked = isEnabled,
-                                onCheckedChange = { newValue ->
-                                    if (newValue && !hasModel) {
-                                        Toast.makeText(context, "请先下载模型文件", Toast.LENGTH_SHORT).show()
-                                    } else {
-                                        isEnabled = newValue
-                                        SettingsPreferences.setSmartPredictionEnabled(context, newValue)
-                                    }
-                                },
+                                checked = uiState.isEnabled,
+                                onCheckedChange = { viewModel.setEnabled(it) },
                                 colors = SwitchDefaults.colors(
                                     checkedThumbColor = MaterialTheme.colorScheme.primary,
                                     checkedTrackColor = MaterialTheme.colorScheme.primaryContainer
@@ -316,7 +180,7 @@ fun SmartPredictionSettingsContent(
                         }
                     }
                     
-                    if (!hasModel) {
+                    if (!uiState.hasModel) {
                         HorizontalDivider(
                             modifier = Modifier.padding(start = 16.dp),
                             thickness = 0.5.dp,
@@ -345,7 +209,7 @@ fun SmartPredictionSettingsContent(
                 })
             }
             
-            if (isInitialized) {
+            if (uiState.isInitialized) {
                 item {
                     SettingsSection(title = "用户学习数据", content = {
                         Column(modifier = Modifier.padding(16.dp)) {
@@ -366,14 +230,14 @@ fun SmartPredictionSettingsContent(
                                     )
                                 }
                                 Text(
-                                    text = "$cacheSize 条",
+                                    text = "${uiState.cacheSize} 条",
                                     style = MaterialTheme.typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
                             
-                            if (cacheSize > 0) {
+                            if (uiState.cacheSize > 0) {
                                 Spacer(modifier = Modifier.height(12.dp))
                                 
                                 Row(
@@ -381,35 +245,22 @@ fun SmartPredictionSettingsContent(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
                                     OutlinedButton(
-                                        onClick = {
-                                            scope.launch {
-                                                isSaving = true
-                                                AssociationManager.saveUserData()
-                                                isSaving = false
-                                            }
-                                        },
-                                        enabled = !isSaving,
+                                        onClick = { viewModel.saveUserData() },
+                                        enabled = !uiState.isSaving,
                                         modifier = Modifier.weight(1f)
                                     ) {
-                                        if (isSaving) {
+                                        if (uiState.isSaving) {
                                             CircularProgressIndicator(
                                                 modifier = Modifier.size(16.dp),
                                                 strokeWidth = 2.dp
                                             )
                                             Spacer(modifier = Modifier.width(8.dp))
                                         }
-                                        Text(if (isSaving) "保存中..." else "保存数据")
+                                        Text(if (uiState.isSaving) "保存中..." else "保存数据")
                                     }
                                     
                                     OutlinedButton(
-                                        onClick = {
-                                            scope.launch {
-                                                withContext(Dispatchers.IO) {
-                                                    AssociationManager.saveUserData()
-                                                }
-                                                cacheSize = AssociationManager.getCacheSize()
-                                            }
-                                        },
+                                        onClick = { viewModel.refreshCacheSize() },
                                         modifier = Modifier.weight(1f)
                                     ) {
                                         Icon(Icons.Default.Settings, contentDescription = null, modifier = Modifier.size(16.dp))
@@ -437,13 +288,13 @@ fun SmartPredictionSettingsContent(
                                     fontWeight = FontWeight.Medium
                                 )
                                 Text(
-                                    text = if (hasModel) "已安装" else "未安装",
+                                    text = if (uiState.hasModel) "已安装" else "未安装",
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = if (hasModel) MaterialTheme.colorScheme.primary 
+                                    color = if (uiState.hasModel) MaterialTheme.colorScheme.primary 
                                            else MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
-                            if (hasModel) {
+                            if (uiState.hasModel) {
                                 Icon(
                                     Icons.Default.AutoAwesome,
                                     contentDescription = null,
@@ -453,24 +304,24 @@ fun SmartPredictionSettingsContent(
                             }
                         }
                         
-                        if (isDownloading) {
+                        if (uiState.isDownloading) {
                             Spacer(modifier = Modifier.height(16.dp))
                             
                             Column(modifier = Modifier.fillMaxWidth()) {
                                 Text(
-                                    text = downloadStatus,
+                                    text = uiState.downloadStatus,
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 LinearProgressIndicator(
-                                    progress = { downloadProgress },
+                                    progress = { uiState.downloadProgress },
                                     modifier = Modifier.fillMaxWidth(),
                                     color = MaterialTheme.colorScheme.primary,
                                     trackColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
                                 )
                             }
-                        } else if (!hasModel) {
+                        } else if (!uiState.hasModel) {
                             Spacer(modifier = Modifier.height(16.dp))
                             
                             Row(
@@ -478,10 +329,7 @@ fun SmartPredictionSettingsContent(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 OutlinedButton(
-                                    onClick = {
-                                        tempRepo = modelRepo
-                                        showRepoDialog = true
-                                    },
+                                    onClick = { viewModel.showRepoDialog() },
                                     modifier = Modifier.weight(1f)
                                 ) {
                                     Icon(Icons.Default.Settings, contentDescription = null, modifier = Modifier.size(16.dp))
@@ -490,7 +338,7 @@ fun SmartPredictionSettingsContent(
                                 }
                                 
                                 Button(
-                                    onClick = { downloadModelFiles() },
+                                    onClick = { viewModel.downloadModelFiles() },
                                     modifier = Modifier.weight(1f),
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = MaterialTheme.colorScheme.primary,
@@ -504,7 +352,7 @@ fun SmartPredictionSettingsContent(
                             }
                         }
                         
-                        if (hasModel) {
+                        if (uiState.hasModel) {
                             Spacer(modifier = Modifier.height(16.dp))
                             
                             Row(
@@ -512,10 +360,7 @@ fun SmartPredictionSettingsContent(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 OutlinedButton(
-                                    onClick = {
-                                        tempRepo = modelRepo
-                                        showRepoDialog = true
-                                    },
+                                    onClick = { viewModel.showRepoDialog() },
                                     modifier = Modifier.weight(1f)
                                 ) {
                                     Icon(Icons.Default.Settings, contentDescription = null, modifier = Modifier.size(16.dp))
@@ -524,22 +369,7 @@ fun SmartPredictionSettingsContent(
                                 }
                                 
                                 OutlinedButton(
-                                    onClick = {
-                                        val vocabFile = context.filesDir.resolve("vocab.json")
-                                        val modelFile = context.filesDir.resolve("model_int8_dynamic.onnx")
-                                        vocabFile.delete()
-                                        modelFile.delete()
-                                        hasModel = false
-                                        isEnabled = false
-                                        SettingsPreferences.setSmartPredictionEnabled(context, false)
-                                        if (isInitialized) {
-                                            scope.launch {
-                                                AssociationManager.release()
-                                            }
-                                            isInitialized = false
-                                        }
-                                        Toast.makeText(context, "模型已删除", Toast.LENGTH_SHORT).show()
-                                    },
+                                    onClick = { viewModel.deleteModel() },
                                     modifier = Modifier.weight(1f)
                                 ) {
                                     Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(16.dp))

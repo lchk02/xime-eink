@@ -46,20 +46,18 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kingzcheung.xime.BuildConfig
-import com.kingzcheung.xime.update.UpdateChecker
 import com.kingzcheung.xime.update.UpdateResult
-import kotlinx.coroutines.launch
+import com.kingzcheung.xime.viewmodel.AboutViewModel
 
 data class LicenseItem(
     val name: String,
@@ -139,9 +137,8 @@ fun AboutContent(
     onNavigateToLogViewer: () -> Unit = {}
 ) {
     val uriHandler = LocalUriHandler.current
-    val coroutineScope = rememberCoroutineScope()
-    var updateState by remember { mutableStateOf<UpdateResult?>(null) }
-    var isChecking by remember { mutableStateOf(false) }
+    val viewModel: AboutViewModel = viewModel()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
     Column(
         modifier = Modifier
@@ -223,7 +220,7 @@ fun AboutContent(
                             horizontalArrangement = Arrangement.Center,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            if (isChecking) {
+                            if (uiState.isChecking) {
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(16.dp),
                                     strokeWidth = 2.dp,
@@ -237,14 +234,8 @@ fun AboutContent(
                                 )
                             } else {
                                 IconButton(
-                                    onClick = {
-                                        coroutineScope.launch {
-                                            isChecking = true
-                                            updateState = UpdateChecker.checkForUpdate()
-                                            isChecking = false
-                                        }
-                                    },
-                                    enabled = !isChecking
+                                    onClick = { viewModel.checkForUpdate() },
+                                    enabled = !uiState.isChecking
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Refresh,
@@ -260,7 +251,7 @@ fun AboutContent(
                             }
                         }
                         
-                        when (val result = updateState) {
+                        when (val result = uiState.updateState) {
                             is UpdateResult.UpdateAvailable -> {
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Row(
