@@ -5,11 +5,14 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -211,7 +214,9 @@ fun SwipeableKeyButton(
     onSwipe: ((String) -> Unit)? = null,
     onSwipeDown: ((String) -> Unit)? = null,
     onSwipeStateChange: ((SwipeState, Rect) -> Unit)? = null,
-    onPress: (() -> Unit)? = null
+    onPress: (() -> Unit)? = null,
+    fontSize: androidx.compose.ui.unit.TextUnit = androidx.compose.ui.unit.TextUnit.Unspecified,
+    swipeFontSize: androidx.compose.ui.unit.TextUnit = 9.sp
 ) {
     var isPressed by remember { mutableStateOf(false) }
     var dragOffsetY by remember { mutableStateOf(0f) }
@@ -336,7 +341,7 @@ fun SwipeableKeyButton(
         Text(
             text = text,
             color = textColor,
-            fontSize = if (text.length > 2) 14.sp else 18.sp,
+            fontSize = if (fontSize != androidx.compose.ui.unit.TextUnit.Unspecified) fontSize else if (text.length > 2) 14.sp else 18.sp,
             fontWeight = if (text.length > 2) FontWeight.Medium else FontWeight.Normal,
             textAlign = TextAlign.Center,
             maxLines = 1
@@ -346,7 +351,7 @@ fun SwipeableKeyButton(
             Text(
                 text = swipeText,
                 color = textColor.copy(alpha = 0.5f),
-                fontSize = 9.sp,
+                fontSize = swipeFontSize,
                 fontWeight = FontWeight.Normal,
                 textAlign = TextAlign.Center,
                 maxLines = 1,

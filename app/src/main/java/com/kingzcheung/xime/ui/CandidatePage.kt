@@ -169,20 +169,20 @@ fun CandidatePageItem(
     
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(6.dp))
-            .background(textColor.copy(alpha = 0.1f))
+//            .clip(RoundedCornerShape(6.dp))
+//            .background(textColor.copy(alpha = 0.1f))
             .clickable(onClick = onClick)
             .fillMaxWidth()
     ) {
         Text(
             text = text,
             color = textColor,
-            fontSize = 15.sp,
+            fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
             maxLines = 1,
             modifier = Modifier
                 .align(Alignment.Center)
-                .padding(vertical = 8.dp)
+                .padding(vertical = 4.dp)
         )
         if (displayComment.isNotEmpty()) {
             Text(

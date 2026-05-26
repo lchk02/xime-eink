@@ -78,6 +78,9 @@ fun CandidateBar(
 ) {
     val displayCandidates = candidates.take(20)
     val hasMoreCandidates = candidates.size >= 5
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+    val horizontalPadding = if (isLandscape) 50.dp else 8.dp
     val hasMoreAssociation = associationCandidates.size >= 5
     val hasAnyMore = hasMoreCandidates || hasMoreAssociation
 
@@ -135,7 +138,7 @@ fun CandidateBar(
             .fillMaxWidth()
             .height(50.dp)
             .background(backgroundColor)
-            .padding(horizontal = 8.dp)
+            .padding(horizontal = horizontalPadding)
     ) {
         // 上方行：输入编码（拼音），仅在打字时显示
         if (!showClipboardTabs && isComposing && inputText.isNotEmpty()) {

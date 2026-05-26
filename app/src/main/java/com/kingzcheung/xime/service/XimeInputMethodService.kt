@@ -152,6 +152,11 @@ class XimeInputMethodService : InputMethodService(), LifecycleOwner, SavedStateR
 
     override fun onCreate() {
         super.onCreate()
+        // 允许 IME 窗口绘制到摄像头挖孔/刘海区域（横屏时背景覆盖全屏）
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+            window.window?.attributes?.layoutInDisplayCutoutMode =
+                android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+        }
         savedStateRegistryController.performRestore(null)
         window.window?.decorView?.setViewTreeLifecycleOwner(this)
         window.window?.decorView?.setViewTreeSavedStateRegistryOwner(this)
@@ -358,7 +363,7 @@ class XimeInputMethodService : InputMethodService(), LifecycleOwner, SavedStateR
                 val state = uiState.value
                 val isDarkTheme = isDarkTheme()
                 val screenHeightDp = resources.configuration.screenHeightDp
-                val maxHeightDp = screenHeightDp / 2
+                val maxHeightDp = (screenHeightDp * 3) / 5
                 val keyboardHeight = if (state.showKeyboardResize) {
                     maxHeightDp + 100
                 } else {

@@ -551,7 +551,9 @@ fun KeyboardRowWithConfig(
     onSwipeStateChange: ((SwipeState, Rect) -> Unit)? = null,
     onKeyPressDown: ((String) -> Unit)? = null,
     swipeDownShowRootsEnabled: Boolean = false,
-    currentSchemaId: String = ""
+    currentSchemaId: String = "",
+    fontSize: androidx.compose.ui.unit.TextUnit = androidx.compose.ui.unit.TextUnit.Unspecified,
+    swipeFontSize: androidx.compose.ui.unit.TextUnit = 9.sp
 ) {
     Row(
         modifier = modifier
@@ -578,7 +580,9 @@ fun KeyboardRowWithConfig(
                 onSwipe = if (swipeUpText != null) onKeyPress else null,
                 onSwipeDown = if (isAsciiMode && swipeDownText != null) onKeyPress else null,
                 onSwipeStateChange = onSwipeStateChange,
-                onPress = { onKeyPressDown?.invoke(key) }
+                onPress = { onKeyPressDown?.invoke(key) },
+                fontSize = fontSize,
+                swipeFontSize = swipeFontSize
             )
         }
     }
