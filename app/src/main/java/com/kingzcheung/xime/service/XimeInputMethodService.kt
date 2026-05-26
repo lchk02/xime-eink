@@ -413,6 +413,12 @@ class XimeInputMethodService : InputMethodService(), LifecycleOwner, SavedStateR
                             onKeyPressDown = { key ->
                                 feedbackManager.performKeyPressDownEffect(key)
                             },
+                            onCursorMove = { direction ->
+                                serviceScope.launch(Dispatchers.Main) {
+                                    val keyCode = if (direction > 0) KeyEvent.KEYCODE_DPAD_RIGHT else KeyEvent.KEYCODE_DPAD_LEFT
+                                    sendDownUpKeyEvents(keyCode)
+                                }
+                            },
                             onCandidateSelect = { index ->
                                 selectCandidate(index)
                             },

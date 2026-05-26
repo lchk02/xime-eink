@@ -2,6 +2,8 @@ package com.kingzcheung.xime.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +26,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.kingzcheung.xime.clipboard.ClipboardItem
@@ -96,6 +100,7 @@ fun KeyboardView(
     uiStateProvider: () -> InputUIState,
     onPageDown: (() -> Unit)? = null,
     onPageUp: (() -> Unit)? = null,
+    onCursorMove: ((Int) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     var isShifted by remember { mutableStateOf(false) }
@@ -317,6 +322,28 @@ fun KeyboardView(
                 }
 
                 else -> {
+                    val cursorMod = if (!isComposing && inputText.isEmpty() && onCursorMove != null)
+                        Modifier.pointerInput(Unit) {
+                            awaitEachGesture {
+                                val down = awaitFirstDown(requireUnconsumed = false)
+                                var totalDrag = 0f
+                                var lastPosition = down.position
+                                do {
+                                    val event = awaitPointerEvent(PointerEventPass.Initial)
+                                    val change = event.changes.firstOrNull() ?: break
+                                    if (!change.pressed) break
+                                    val dx = change.position.x - lastPosition.x
+                                    totalDrag += dx
+                                    lastPosition = change.position
+                                    // 每超过阈值就触发一次光标移动并重置累计距离
+                                    while (kotlin.math.abs(totalDrag) > 50f) {
+                                        change.consume()
+                                        onCursorMove(if (totalDrag > 0f) 1 else -1)
+                                        totalDrag = if (totalDrag > 0f) totalDrag - 50f else totalDrag + 50f
+                                    }
+                                } while (true)
+                            }
+                        } else Modifier
                     when (keyboardMode) {
                         KeyboardMode.FULL -> {
                             KeyboardLayout(
@@ -338,13 +365,12 @@ fun KeyboardView(
                                 keyTextColor = keyTextColor,
                                 specialKeyBackgroundColor = specialKeyBgColor,
                                 keyboardBackgroundColor = keyboardBgColor,
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier.weight(1f).then(cursorMod),
                                 onVoiceModeChange = onVoiceModeChange,
                                 isVoiceMode = isVoiceMode,
                                 onKeyPressDown = onKeyPressDown
                             )
                         }
-
                         KeyboardMode.NUMBER -> {
                             NumberKeyboardLayout(
                                 onKeyPress = { key ->
@@ -359,11 +385,10 @@ fun KeyboardView(
                                 keyTextColor = keyTextColor,
                                 specialKeyBackgroundColor = specialKeyBgColor,
                                 keyboardBackgroundColor = keyboardBgColor,
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier.weight(1f).then(cursorMod),
                                 onKeyPressDown = onKeyPressDown
                             )
                         }
-
                         KeyboardMode.SYMBOL -> {
                             SymbolKeyboardLayout(
                                 onKeyPress = { key ->

@@ -281,7 +281,7 @@ fun KeyboardLayout(
                     )
                 }
                 
-                // 空格键 - 使用 pointerInput 处理长按
+                // 空格键 - 支持左右滑动控制光标、长按语音
                 val scope = rememberCoroutineScope()
                 Box(
                     modifier = Modifier
@@ -290,7 +290,7 @@ fun KeyboardLayout(
                         .shadow(1.dp, RoundedCornerShape(8.dp), ambientColor = Color(0x80000000), spotColor = Color(0x80000000))
                         .clip(RoundedCornerShape(8.dp))
                         .background(keyBackgroundColor)
-                        .pointerInput(Unit) {
+                        .pointerInput(onKeyPress) {
                             awaitEachGesture {
                                 val down = awaitFirstDown(requireUnconsumed = false)
                                 onKeyPressDown?.invoke("space")
@@ -311,22 +311,45 @@ fun KeyboardLayout(
                                     }
                                 }
                                 
-                                // 等待手指抬起或取消
-                                try {
-                                    waitForUpOrCancellation()
-                                } catch (e: Exception) {
-                                    // 手势取消
-                                }
+                                // 跟踪水平滑动控制光标
+                                var dragX = 0f
+                                var isHorizontalSwipe = false
+                                val cursorThreshold = 60f
                                 
-                                // 取消长按检测
+                                do {
+                                    val event = awaitPointerEvent()
+                                    val change = event.changes.firstOrNull() ?: break
+                                    
+                                    if (change.pressed) {
+                                        val dx = change.position.x - down.position.x
+                                        val dy = change.position.y - down.position.y
+                                        
+                                        // 判断是否为水平滑动（水平位移远大于垂直位移）
+                                        if (kotlin.math.abs(dx) > cursorThreshold &&
+                                            kotlin.math.abs(dx) > kotlin.math.abs(dy) * 2f) {
+                                            if (!isHorizontalSwipe) {
+                                                isHorizontalSwipe = true
+                                                longPressJob.cancel()
+                                            }
+                                            val steps = (dx / cursorThreshold).toInt()
+                                            if (steps != 0) {
+                                                onKeyPress(if (steps > 0) "cursor_right" else "cursor_left")
+                                                dragX -= steps * cursorThreshold
+                                            }
+                                        }
+                                        
+                                        // 更新累积偏移
+                                        dragX = dx
+                                        change.consume()
+                                    } else break
+                                } while (true)
+                                
                                 longPressJob.cancel()
                                 
-                                // 处理结果
-                                if (!longPressTriggered) {
-                                    // 普通点击
+                                // 非滑动操作视为点击空格
+                                if (!longPressTriggered && !isHorizontalSwipe) {
                                     onKeyPress("space")
                                 }
-                                // 长按触发后：VoiceKeyboardContainer 处理手指抬起停止录音
                             }
                         },
                     contentAlignment = Alignment.Center
