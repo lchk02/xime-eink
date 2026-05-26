@@ -165,11 +165,6 @@ fun CandidateBar(
                             else
                                 Color.Transparent
                         )
-                        .clickable(
-                            enabled = onInputTextClick != null,
-                            interactionSource = inputTextInteractionSource,
-                            indication = null
-                        ) { onInputTextClick?.invoke() }
                         .padding(horizontal = 0.dp)
                 )
             }
