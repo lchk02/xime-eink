@@ -93,6 +93,7 @@ class XimeInputMethodService : InputMethodService(), LifecycleOwner, SavedStateR
     
     private var isTrackingVoiceButtons = false
     private var voiceRecordingStarted = false
+    private var lastClearedText: String = ""
     
     private val predictionManager = PredictionManager(
         context = this,
@@ -904,6 +905,49 @@ if (state.showKeyboardResize) {
                     )
                     needsUIUpdate = true
                     Log.d(TAG, "Clear composition: cleared all")
+                }
+                "clear_all" -> {
+                    // 记录当前输入框中的文本以便撤回
+                    val inputFieldText = withContext(Dispatchers.Main) {
+                        currentInputConnection?.getTextBeforeCursor(Int.MAX_VALUE, 0)?.toString() ?: ""
+                    }
+                    lastClearedText = inputFieldText + state.inputText
+                    rimeEngine.clearComposition()
+                    uiState.value = uiState.value.copy(
+                        candidates = emptyArray(),
+                        candidateComments = emptyArray(),
+                        associationCandidates = emptyArray(),
+                        pendingEnglishText = "",
+                        inputText = "",
+                        isComposing = false,
+                        isShowingRecentClipboard = false
+                    )
+                    withContext(Dispatchers.Main) {
+                        currentInputConnection?.let {
+                            it.finishComposingText()
+                            // 删除输入框中所有文字
+                            val textLen = inputFieldText.length
+                            if (textLen > 0) {
+                                it.deleteSurroundingText(textLen, 0)
+                            }
+                        }
+                    }
+                    needsUIUpdate = true
+                    Log.d(TAG, "Clear all: saved='$lastClearedText'")
+                }
+                "undo_clear" -> {
+                    val text = lastClearedText
+                    if (text.isNotEmpty()) {
+                        lastClearedText = ""
+                        withContext(Dispatchers.Main) {
+                            val ic = currentInputConnection
+                            if (ic != null) {
+                                ic.commitText(text, text.length)
+                            }
+                        }
+                    }
+                    needsUIUpdate = true
+                    Log.d(TAG, "Undo clear: restored='$text'")
                 }
                 "enter" -> {
                     if (state.isComposing) {

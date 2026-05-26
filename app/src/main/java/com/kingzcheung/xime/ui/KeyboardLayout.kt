@@ -233,7 +233,13 @@ fun KeyboardLayout(
                         swipeText = "清空",
                         onSwipe = { onKeyPress("clear_composition") },
                         onLongClick = { onKeyPress("delete") },
-                        onPress = { onKeyPressDown?.invoke("delete") }
+                        onPress = { onKeyPressDown?.invoke("delete") },
+                        swipeUpLabel = "上滑清空",
+                        swipeDownLabel = "下滑撤回",
+                        onSwipeUp = { onKeyPress("clear_all") },
+                        onSwipeDown = { onKeyPress("undo_clear") },
+                        onSwipeLeft = { onKeyPress("clear_composition") },
+                        onSwipeStateChange = { state, bounds -> processSwipeState(state, bounds) }
                     )
                 }
             }

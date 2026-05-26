@@ -462,16 +462,33 @@ fun SwipeableIconKeyButton(
     swipeText: String? = null,
     onSwipe: (() -> Unit)? = null,
     onLongClick: (() -> Unit)? = null,
-    onPress: (() -> Unit)? = null
+    onPress: (() -> Unit)? = null,
+    // 上滑/下滑/左滑增强
+    swipeUpLabel: String? = null,
+    swipeDownLabel: String? = null,
+    onSwipeUp: (() -> Unit)? = null,
+    onSwipeDown: (() -> Unit)? = null,
+    onSwipeLeft: (() -> Unit)? = null,
+    onSwipeStateChange: ((SwipeState, Rect) -> Unit)? = null
 ) {
     var isPressed by remember { mutableStateOf(false) }
     var dragOffsetY by remember { mutableStateOf(0f) }
+    var dragOffsetX by remember { mutableStateOf(0f) }
     var hasTriggeredSwipe by remember { mutableStateOf(false) }
+    var hasTriggeredSwipeDown by remember { mutableStateOf(false) }
+    var hasTriggeredSwipeLeft by remember { mutableStateOf(false) }
     var isDragging by remember { mutableStateOf(false) }
+    var isSwipingUp by remember { mutableStateOf(false) }
+    var isSwipingDown by remember { mutableStateOf(false) }
     var isLongPress by remember { mutableStateOf(false) }
     var hasTriggeredLongPress by remember { mutableStateOf(false) }
+    var buttonBounds by remember { mutableStateOf(Rect(0f, 0f, 0f, 0f)) }
     
-    val swipeThreshold = -50f
+    val swipeUpThreshold = -50f
+    val swipeDownThreshold = 50f
+    val swipeLeftThreshold = -80f
+    val bubbleShowThresholdUp = swipeUpThreshold * 0.3f
+    val bubbleShowThresholdDown = swipeDownThreshold * 0.3f
     
     LaunchedEffect(isLongPress) {
         if (isLongPress && onLongClick != null) {
@@ -483,7 +500,6 @@ fun SwipeableIconKeyButton(
         }
     }
     
-    // 辅助函数：生成更深的颜色（混合黑色）
     fun darkenColor(color: Color, factor: Float = 0.15f): Color {
         return Color(
             red = (color.red * (1 - factor)).coerceIn(0f, 1f),
@@ -497,6 +513,9 @@ fun SwipeableIconKeyButton(
         modifier = modifier
             .height((44 * LocalStretchFactor.current).dp)
             .shadow(1.dp, RoundedCornerShape(8.dp), ambientColor = Color(0x80000000), spotColor = Color(0x80000000))
+            .onGloballyPositioned { coordinates ->
+                buttonBounds = coordinates.boundsInRoot()
+            }
             .clip(RoundedCornerShape(8.dp))
             .background(
                 if (isPressed) darkenColor(backgroundColor, 0.2f)
@@ -530,32 +549,100 @@ fun SwipeableIconKeyButton(
                         isPressed = true
                         isLongPress = false
                         dragOffsetY = 0f
+                        dragOffsetX = 0f
                         hasTriggeredSwipe = false
+                        hasTriggeredSwipeDown = false
+                        hasTriggeredSwipeLeft = false
+                        isSwipingUp = false
+                        isSwipingDown = false
+                        onSwipeStateChange?.invoke(SwipeState(), buttonBounds)
                         onPress?.invoke()
                     },
                     onDragEnd = {
-                        if (dragOffsetY < swipeThreshold && !hasTriggeredSwipe && onSwipe != null) {
+                        if (isSwipingUp && !hasTriggeredSwipe && onSwipeUp != null) {
+                            hasTriggeredSwipe = true
+                            onSwipeUp()
+                        } else if (isSwipingDown && !hasTriggeredSwipeDown && onSwipeDown != null) {
+                            hasTriggeredSwipeDown = true
+                            onSwipeDown()
+                        } else if (dragOffsetY < swipeUpThreshold && !hasTriggeredSwipe && onSwipe != null) {
+                            hasTriggeredSwipe = true
                             onSwipe()
                         }
                         isPressed = false
                         dragOffsetY = 0f
+                        dragOffsetX = 0f
                         hasTriggeredSwipe = false
+                        hasTriggeredSwipeDown = false
+                        hasTriggeredSwipeLeft = false
                         isDragging = false
+                        isSwipingUp = false
+                        isSwipingDown = false
                         isLongPress = false
+                        onSwipeStateChange?.invoke(SwipeState(), buttonBounds)
                     },
                     onDragCancel = {
                         isPressed = false
                         dragOffsetY = 0f
+                        dragOffsetX = 0f
                         hasTriggeredSwipe = false
+                        hasTriggeredSwipeDown = false
+                        hasTriggeredSwipeLeft = false
                         isDragging = false
+                        isSwipingUp = false
+                        isSwipingDown = false
                         isLongPress = false
+                        onSwipeStateChange?.invoke(SwipeState(), buttonBounds)
                     },
                     onDrag = { change, dragAmount ->
                         dragOffsetY += dragAmount.y
+                        dragOffsetX += dragAmount.x
                         
-                        if (dragOffsetY < swipeThreshold && !hasTriggeredSwipe && onSwipe != null) {
-                            hasTriggeredSwipe = true
-                            onSwipe()
+                        // 左滑检测（优先于垂直滑动）
+                        if (dragOffsetX < swipeLeftThreshold && !hasTriggeredSwipeLeft && onSwipeLeft != null) {
+                            hasTriggeredSwipeLeft = true
+                            onSwipeLeft()
+                        }
+                        
+                        // 上滑
+                        if (dragOffsetY < 0 && dragOffsetX >= swipeLeftThreshold) {
+                            val showUp = dragOffsetY < bubbleShowThresholdUp && swipeUpLabel != null
+                            if (showUp != isSwipingUp) {
+                                isSwipingUp = showUp
+                                isSwipingDown = false
+                                onSwipeStateChange?.invoke(
+                                    SwipeState(isSwiping = showUp, swipeText = swipeUpLabel, isSwipeDown = false),
+                                    buttonBounds
+                                )
+                            }
+                            
+                            if (dragOffsetY < swipeUpThreshold && !hasTriggeredSwipe) {
+                                if (onSwipeUp != null) {
+                                    hasTriggeredSwipe = true
+                                    onSwipeUp()
+                                } else if (onSwipe != null) {
+                                    hasTriggeredSwipe = true
+                                    onSwipe()
+                                }
+                            }
+                        }
+                        
+                        // 下滑
+                        if (dragOffsetY > 0 && dragOffsetX >= swipeLeftThreshold) {
+                            val showDown = dragOffsetY > bubbleShowThresholdDown && swipeDownLabel != null
+                            if (showDown != isSwipingDown) {
+                                isSwipingDown = showDown
+                                isSwipingUp = false
+                                onSwipeStateChange?.invoke(
+                                    SwipeState(isSwiping = showDown, swipeText = swipeDownLabel, isSwipeDown = true),
+                                    buttonBounds
+                                )
+                            }
+                            
+                            if (dragOffsetY > swipeDownThreshold && !hasTriggeredSwipeDown && onSwipeDown != null) {
+                                hasTriggeredSwipeDown = true
+                                onSwipeDown()
+                            }
                         }
                     }
                 )
