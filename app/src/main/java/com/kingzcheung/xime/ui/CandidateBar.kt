@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
@@ -25,6 +26,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,6 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kingzcheung.xime.R
+import com.kingzcheung.xime.ui.KeyboardRoute
 
 /**
  * 候选栏组件
@@ -60,22 +63,19 @@ fun CandidateBar(
     dividerColor: Color,
     accentColor: Color = Color(0xFF1A73E8),
     isDarkTheme: Boolean = false,
-    showCandidatePage: Boolean = false,
-    onToggleDarkMode: (() -> Unit)? = null,
+    currentRoute: KeyboardRoute = KeyboardRoute.Keyboard,
     onLogoClick: (() -> Unit)? = null,
-    showMenu: Boolean = false,
-    showSchemaList: Boolean = false,
-    onDismissMenu: (() -> Unit)? = null,
+    onBack: (() -> Unit)? = null,
     onHideKeyboard: (() -> Unit)? = null,
     onShowMoreCandidates: (() -> Unit)? = null,
-    showClipboardTabs: Boolean = false,
-    clipboardTab: Int = 0,
     onClipboardTabChange: ((Int) -> Unit)? = null,
     onInputTextClick: (() -> Unit)? = null,
     associationCandidates: List<String> = emptyList(),
     onAssociationSelect: ((Int) -> Unit)? = null,
+    toolbarActions: List<ToolbarAction> = emptyList(),
     @SuppressLint("ModifierParameter") modifier: Modifier = Modifier
 ) {
+    val clipboardTab = (currentRoute as? KeyboardRoute.Clipboard)?.tab ?: 0
     val displayCandidates = candidates.take(20)
     val hasMoreCandidates = candidates.size >= 5
     val configuration = LocalConfiguration.current
@@ -141,7 +141,7 @@ fun CandidateBar(
             .padding(horizontal = horizontalPadding)
     ) {
         // 上方行：输入编码（拼音），仅在打字时显示
-        if (!showClipboardTabs && isComposing && inputText.isNotEmpty()) {
+        if (currentRoute !is KeyboardRoute.Clipboard && isComposing && inputText.isNotEmpty()) {
             val inputTextInteractionSource = remember { MutableInteractionSource() }
             val isInputTextPressed by inputTextInteractionSource.collectIsPressedAsState()
 
@@ -182,13 +182,13 @@ fun CandidateBar(
                 .weight(1f).padding(top = 2.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (showClipboardTabs) {
+            if (currentRoute is KeyboardRoute.Clipboard) {
                 Box(
                     modifier = Modifier
                         .size(28.dp)
                         .clip(RoundedCornerShape(14.dp))
                         .background(if (isDarkTheme) Color(0xFF374151) else Color(0xFFF3F4F6))
-                        .clickable { onDismissMenu?.invoke() },
+                        .clickable { onBack?.invoke() },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -251,13 +251,13 @@ fun CandidateBar(
                 Spacer(modifier = Modifier.weight(1f))
             } else {
                 if (!isComposing && inputText.isEmpty()) {
-                    if (showSchemaList && onDismissMenu != null) {
+                    if (currentRoute is KeyboardRoute.SchemaList && onBack != null) {
                         Box(
                             modifier = Modifier
                                 .size(28.dp)
                                 .clip(RoundedCornerShape(14.dp))
                                 .background(if (isDarkTheme) Color(0xFF374151) else Color(0xFFF3F4F6))
-                                .clickable { onDismissMenu() },
+                                .clickable { onBack() },
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -267,13 +267,13 @@ fun CandidateBar(
                                 modifier = Modifier.size(24.dp)
                             )
                         }
-                    } else if (showMenu && onDismissMenu != null) {
+                    } else if (currentRoute is KeyboardRoute.Menu && onBack != null) {
                         Box(
                             modifier = Modifier
                                 .size(28.dp)
                                 .clip(RoundedCornerShape(14.dp))
                                 .background(if (isDarkTheme) Color(0xFF374151) else Color(0xFFF3F4F6))
-                                .clickable { onDismissMenu() },
+                                .clickable { onBack() },
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -360,15 +360,38 @@ fun CandidateBar(
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                
+                if (!isComposing && inputText.isEmpty() && toolbarActions.isNotEmpty()) {
+                    toolbarActions.forEach { action ->
+                        Box(
+                            modifier = Modifier
+                                .padding(horizontal = 5.dp)
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    if (isDarkTheme) Color.White.copy(
+                                        alpha = 0.15f
+                                    ) else Color.Black.copy(alpha = 0.1f)
+                                )
+                                .clickable(onClick = action.onClick),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = action.button.icon,
+                                contentDescription = action.button.label,
+                                tint = textColor,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                }
 
-                if (showCandidatePage) {
+                if (currentRoute is KeyboardRoute.CandidatePage) {
                     Box(
                         modifier = Modifier
                             .size(28.dp)
                             .clip(RoundedCornerShape(14.dp))
                             .background(if (isDarkTheme) Color(0xFF374151) else Color(0xFFF3F4F6))
-                            .clickable { onDismissMenu?.invoke() },
+                            .clickable { onBack?.invoke() },
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -425,8 +448,8 @@ fun CandidateBar(
 
                         Box(
                             modifier = Modifier
-                                .size(24.dp)
-                                .clip(RoundedCornerShape(12.dp))
+                                .size(32.dp)
+                                .clip(CircleShape)
                                 .background(
                                     if (isHideKeyboardPressed) (if (isDarkTheme) Color.White.copy(
                                         alpha = 0.15f
