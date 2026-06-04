@@ -9,7 +9,15 @@
 /.idea/assetWizardSettings.xml
 /.idea/deploymentTargetSelector.xml
 /.idea/misc.xml
+/.idea/deviceManager.xml
+/.idea/appInsightsSettings.xml
+/.idea/markdown.xml
+/.idea/runConfigurations.xml
+/.idea/AndroidProjectSystem.xml
+/.idea/.gitignore
+/.idea/vcs.xml
 .DS_Store
+.vscode/
 /build
 /captures
 .externalNativeBuild
@@ -36,6 +44,7 @@ build/sherpa-onnx-*.tar.gz
 # Large archives
 *.tar.xz
 *.tar.gz
+*.tar.bz2
 *.zip
 
 # Association model weights (large files, manually placed)
@@ -46,6 +55,7 @@ app/src/main/assets/association_model
 
 # Plugin module builds
 plugin-api/build
+plugin-core/build
 plugins/funasr-speech/build
 plugins/meme-bunny/build
 plugins/kaomoji/build
