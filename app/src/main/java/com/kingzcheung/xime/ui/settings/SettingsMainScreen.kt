@@ -14,11 +14,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.twotone.LibraryBooks
-import androidx.compose.material.icons.twotone.AutoAwesome
 import androidx.compose.material.icons.twotone.CloudSync
 import androidx.compose.material.icons.twotone.Description
-import androidx.compose.material.icons.twotone.Extension
-import androidx.compose.material.icons.twotone.GraphicEq
 import androidx.compose.material.icons.twotone.Info
 import androidx.compose.material.icons.twotone.Keyboard
 import androidx.compose.material.icons.twotone.KeyboardAlt
@@ -47,10 +44,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.kingzcheung.xime.settings.SettingsPreferences
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import com.kingzcheung.xime.ui.SettingsItem
 import com.kingzcheung.xime.ui.SettingsSection
 import com.kingzcheung.xime.ui.SettingsToggleItem
@@ -62,9 +55,6 @@ fun SettingsMainContent(
     onNavigateToTheme: () -> Unit,
     onNavigateToKeyEffect: () -> Unit,
     onNavigateToDictionary: () -> Unit,
-    onNavigateToPlugins: () -> Unit,
-    onNavigateToSmartPrediction: () -> Unit,
-    onNavigateToSpeechToText: () -> Unit,
     onNavigateToAbout: () -> Unit,
     onNavigateToWebDav: () -> Unit = {}
 ) {
@@ -232,61 +222,6 @@ fun SettingsMainContent(
                             showBottomButtons = newValue
                             SettingsPreferences.setShowBottomButtons(context, newValue)
                         }
-                    )
-                })
-            }
-
-            item {
-                SettingsSection(title = "智能与扩展", content = {
-                    SettingsItem(
-                        icon = Icons.TwoTone.AutoAwesome,
-                        title = "智能联想",
-                        subtitle = "基于 AI 模型的智能联想词预测",
-                        onClick = onNavigateToSmartPrediction,
-                        showArrow = true
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(start = 56.dp),
-                        thickness = 0.5.dp,
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                    )
-                    var sttEnabled by remember { mutableStateOf(SettingsPreferences.isSttEnabled(context)) }
-                    SettingsToggleItem(
-                        icon = Icons.TwoTone.GraphicEq,
-                        title = "语音转文本",
-                        subtitle = "在线 ASR 服务和本地模型管理",
-                        checked = sttEnabled,
-                        showArrow = true,
-                        onClick = {
-                            if (sttEnabled) onNavigateToSpeechToText()
-                        },
-                        onCheckedChange = { enabled ->
-                            sttEnabled = enabled
-                            SettingsPreferences.setSttEnabled(context, enabled)
-                            if (enabled && SettingsPreferences.isSttUseLocal(context)) {
-                                MainScope().launch {
-                                    try {
-                                        val engine = com.kingzcheung.xime.speech.sherpa.SherpaAsrEngine(context)
-                                        withContext(Dispatchers.IO) {
-                                            engine.initialize()
-                                        }
-                                        engine.release()
-                                    } catch (_: Exception) { }
-                                }
-                            }
-                        }
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(start = 56.dp),
-                        thickness = 0.5.dp,
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                    )
-                    SettingsItem(
-                        icon = Icons.TwoTone.Extension,
-                        title = "插件管理",
-                        subtitle = "管理已安装的插件",
-                        onClick = onNavigateToPlugins,
-                        showArrow = true
                     )
                 })
             }

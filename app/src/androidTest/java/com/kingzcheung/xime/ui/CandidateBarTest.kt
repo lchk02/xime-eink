@@ -93,7 +93,6 @@ class CandidateBarTest {
         composeTestRule.setContent {
             CandidateBar(
                 candidates = listOf("你好"),
-                associationCandidates = listOf("世界", "吗"),
                 inputText = "nihao",
                 isComposing = true,
                 onCandidateSelect = {},

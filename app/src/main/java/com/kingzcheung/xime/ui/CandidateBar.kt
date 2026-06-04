@@ -70,8 +70,6 @@ fun CandidateBar(
     onHideKeyboard: (() -> Unit)? = null,
     onShowMoreCandidates: (() -> Unit)? = null,
     onInputTextClick: (() -> Unit)? = null,
-    associationCandidates: List<String> = emptyList(),
-    onAssociationSelect: ((Int) -> Unit)? = null,
     toolbarActions: List<ToolbarAction> = emptyList(),
     @SuppressLint("ModifierParameter") modifier: Modifier = Modifier
 ) {
@@ -81,8 +79,7 @@ fun CandidateBar(
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
     val horizontalPadding = if (isLandscape) 50.dp else 8.dp
-    val hasMoreAssociation = associationCandidates.size >= 5
-    val hasAnyMore = hasMoreCandidates || hasMoreAssociation
+    val hasAnyMore = hasMoreCandidates
 
     val density = LocalDensity.current
     val paint = remember {
@@ -98,39 +95,6 @@ fun CandidateBar(
         val hideBtn = if (onHideKeyboard != null) 28.dp.toPx() else 0f
         rowPaddingPx + moreBtn + hideBtn + 8.dp.toPx()
     }
-
-    val displayAssociation =
-        remember(associationCandidates, displayCandidates, isComposing, inputText) {
-            if (displayCandidates.isEmpty()) {
-                associationCandidates.take(5)
-            } else {
-                val leftSidePx = with(density) {
-                    // inputText 已移到上方行，底部行只需留出 Logo 区域
-                    rowPaddingPx + 32.dp.toPx()
-                }
-                val lazyRowWidthPx = screenWidthPx - leftSidePx - rightSidePx
-
-                val regularWidthPx = displayCandidates.sumOf { c ->
-                    (paint.measureText(c) + itemPaddingPx).toDouble()
-                }.toFloat()
-                val dividerWidthPx = with(density) { 9.dp.toPx() }
-                val availablePx = lazyRowWidthPx - regularWidthPx - dividerWidthPx
-
-                var usedPx = 0f
-                val result = mutableListOf<String>()
-                for (c in associationCandidates) {
-                    val w =
-                        paint.measureText(c) + itemPaddingPx + (if (result.isEmpty()) 0f else spacingPx)
-                    if (usedPx + w <= availablePx) {
-                        usedPx += w
-                        result.add(c)
-                    } else break
-                }
-                if (result.isEmpty() && associationCandidates.isNotEmpty()) {
-                    listOf(associationCandidates.first())
-                } else result
-            }
-        }
 
     Column(
         modifier = modifier
@@ -250,33 +214,11 @@ fun CandidateBar(
                             accentColor = accentColor
                         )
                     }
-
-                    if (displayAssociation.isNotEmpty()) {
-                        item {
-                            Box(
-                                modifier = Modifier
-                                    .width(1.dp)
-                                    .height(20.dp)
-                                    .background(dividerColor.copy(alpha = 0.5f))
-                                    .padding(horizontal = 4.dp)
-                            )
-                        }
-
-                        itemsIndexed(displayAssociation) { index, candidate ->
-                            CandidateItem(
-                                text = candidate,
-                                index = -1,
-                                onClick = { onAssociationSelect?.invoke(index) },
-                                textColor = textColor,
-                                comment = ""
-                            )
-                        }
-                    }
                 }
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                if (!isComposing && inputText.isEmpty() && candidates.isEmpty() && associationCandidates.isEmpty() && toolbarActions.isNotEmpty()) {
+                if (!isComposing && inputText.isEmpty() && candidates.isEmpty() && toolbarActions.isNotEmpty()) {
                     toolbarActions.forEach { action ->
                         val interactionSource = remember { MutableInteractionSource() }
                         val isPressed by interactionSource.collectIsPressedAsState()

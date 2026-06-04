@@ -1,7 +1,5 @@
 package com.kingzcheung.xime.ui
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -291,11 +289,7 @@ fun CompactClipboardItem(
     var showActions by remember { mutableStateOf(false) }
     var actionsWidthPx by remember { mutableStateOf(0f) }
 
-    val slideOffset by animateFloatAsState(
-        targetValue = if (showActions) actionsWidthPx + 40f else 0f,
-        animationSpec = tween(durationMillis = 300),
-        label = "slideOffset"
-    )
+    val slideOffset = if (showActions) actionsWidthPx + 40f else 0f
 
     Box(
         modifier = Modifier

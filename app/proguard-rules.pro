@@ -1,40 +1,35 @@
-# App ProGuard rules
+# App ProGuard / R8 rules
 -dontobfuscate
 
 -optimizations !class/merging/*
 
-# Keep ALL Kotlin stdlib (including internal classes like CollectionsKt__IterablesKt)
+# Keep Kotlin stdlib
 -keep class kotlin.** { *; }
--keepnames class kotlin.** { *; }
--keepclassmembers class kotlin.** { *; }
--keep class kotlin.collections.** { *; }
--keepnames class kotlin.collections.** { *; }
 -keepclassmembers class kotlin.collections.** {
     public static *** *(...);
     public *** *(...);
 }
 
+# Keep Compose
 -keep class androidx.compose.** { *; }
 -keepclassmembers class androidx.compose.** { *; }
 
+# Keep coroutines
 -keep class kotlinx.coroutines.** { *; }
 -keepclassmembers class kotlinx.coroutines.** { *; }
 
--keep class com.kingzcheung.xime.plugin.** { *; }
--keepclassmembers class com.kingzcheung.xime.plugin.** { *; }
-
+# Keep Rime engine (JNI integration)
 -keep class com.kingzcheung.xime.rime.** { *; }
 -keep class com.kingzcheung.xime.**Jni** { *; }
 
--keep class com.k2fsa.sherpa.onnx.** { *; }
--keepclassmembers class com.k2fsa.sherpa.onnx.** {
-    <fields>;
-    <methods>;
-}
-
+# Keep R8 metadata
 -keepattributes SourceFile,LineNumberTable
 
+# Suppress warnings for desktop-only APIs on Android
 -dontwarn java.lang.management.ManagementFactory
 -dontwarn java.lang.management.RuntimeMXBean
 
+# Aggressive optimization
 -processkotlinnullchecks remove
+-allowaccessmodification
+-mergeinterfacesaggressively

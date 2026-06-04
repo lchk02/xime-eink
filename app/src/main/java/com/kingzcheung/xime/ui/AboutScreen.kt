@@ -578,7 +578,7 @@ fun PrivacyPolicyContent(
                         
                         PrivacySection(
                             title = "网络权限",
-                            content = "曦码需要网络权限用于下载联想模型。下载完成后，模型将在本地运行，您的输入内容不会被上传。"
+                            content = "曦码仅在下载输入方案和词库更新时需要网络权限。您的输入内容不会被上传。"
                         )
                         
                         PrivacySection(

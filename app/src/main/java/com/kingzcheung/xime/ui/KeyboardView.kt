@@ -47,7 +47,6 @@ import androidx.compose.ui.unit.sp
 import com.kingzcheung.xime.clipboard.ClipboardItem
 import com.kingzcheung.xime.service.InputUIState
 import com.kingzcheung.xime.settings.SchemaInfo
-import com.kingzcheung.xime.speech.RecognitionState
 import com.kingzcheung.xime.ui.theme.DividerColor
 import com.kingzcheung.xime.ui.theme.DividerColorDark
 import com.kingzcheung.xime.ui.theme.KeyBackground
@@ -79,7 +78,6 @@ fun KeyboardView(
     clipboardItems: List<ClipboardItem> = emptyList(),
     quickSendItems: List<ClipboardItem> = emptyList(),
     recentClipboardItems: List<ClipboardItem> = emptyList(),
-    associationCandidates: Array<String> = emptyArray(),
     keyboardHeightDp: Int = com.kingzcheung.xime.settings.SettingsPreferences.DEFAULT_KEYBOARD_HEIGHT_DP,
     keyboardBottomPaddingDp: Int = 0,
     isDeploying: Boolean = false,
@@ -88,7 +86,6 @@ fun KeyboardView(
     onKeyPress: (String, Boolean) -> Unit,
     onKeyPressDown: ((String) -> Unit)? = null,
     onCandidateSelect: (Int) -> Unit,
-    onAssociationSelect: ((Int) -> Unit)? = null,
     onToggleDarkMode: (() -> Unit)? = null,
     onClipboard: (() -> Unit)? = null,
     onClipboardSelect: ((String) -> Unit)? = null,
@@ -107,16 +104,6 @@ fun KeyboardView(
     onHideKeyboard: (() -> Unit)? = null,
     onSwitchKeyboard: (() -> Unit)? = null,
     onCommitImage: ((String) -> Unit)? = null,
-    isVoiceMode: Boolean = false,
-    voiceBottomActive: Boolean = false,
-    voiceLeftActive: Boolean = false,
-    voiceRightActive: Boolean = false,
-    onVoiceModeChange: ((Boolean) -> Unit)? = null,
-    isSttEnabled: Boolean = true,
-    voicePluginName: String = "",
-    voiceRecognitionState: RecognitionState = RecognitionState.IDLE,
-    voiceRecognizedText: String = "",
-    voiceAmplitude: Float = 0f,
     uiStateProvider: () -> InputUIState,
     onPageDown: (() -> Unit)? = null,
     onPageUp: (() -> Unit)? = null,
@@ -187,8 +174,6 @@ fun KeyboardView(
                         onClipboardSelect?.invoke(inputText)
                     }
                 },
-                associationCandidates = associationCandidates.toList(),
-                onAssociationSelect = onAssociationSelect,
                 toolbarActions = toolbarButtons.mapNotNull { id ->
                     val button = ToolbarButton.fromId(id) ?: return@mapNotNull null
                     val onClick: () -> Unit = when (button) {
@@ -201,141 +186,114 @@ fun KeyboardView(
                 }
             )
 
-            // 显示菜单、剪切板、候选词页面或键盘
-            when {
-                isVoiceMode -> {
-                    VoiceKeyboardLayout(
+            val cursorMod = if (!isComposing && inputText.isEmpty() && onCursorMove != null)
+                                Modifier.pointerInput(Unit) {
+                awaitEachGesture {
+                    val down = awaitFirstDown(requireUnconsumed = false)
+                    var totalDrag = 0f
+                    var lastPosition = down.position
+                    do {
+                        val event = awaitPointerEvent(PointerEventPass.Initial)
+                        val change = event.changes.firstOrNull() ?: break
+                        if (!change.pressed) break
+                        val dx = change.position.x - lastPosition.x
+                        totalDrag += dx
+                        lastPosition = change.position
+                        // 每超过阈值就触发一次光标移动并重置累计距离
+                        while (kotlin.math.abs(totalDrag) > 50f) {
+                            change.consume()
+                            onCursorMove(if (totalDrag > 0f) 1 else -1)
+                            totalDrag = if (totalDrag > 0f) totalDrag - 50f else totalDrag + 50f
+                        }
+                    } while (true)
+                }
+            } else Modifier
+            when (keyboardMode) {
+                KeyboardMode.FULL -> {
+                val configuration = LocalConfiguration.current
+                val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+                if (isLandscape) {
+                    SplitKeyboardLayout(
+                        onKeyPress = { key ->
+                            when (key) {
+                                "shift" -> isShifted = !isShifted
+                                "mode_change" -> keyboardMode = KeyboardMode.NUMBER
+                                "emoji" -> currentRoute = KeyboardRoute.Emoji
+                                else -> onKeyPress(key, isShifted)
+                            }
+                        },
+                        isShifted = isShifted,
+                        isAsciiMode = isAsciiMode,
+                        schemaName = schemaName,
+                        enterKeyText = enterKeyText,
+                        isDarkTheme = isDarkTheme,
+                        keyBackgroundColor = keyBgColor,
+                        keyTextColor = keyTextColor,
+                        specialKeyBackgroundColor = specialKeyBgColor,
+                        keyboardBackgroundColor = keyboardBgColor,
+                        modifier = Modifier.weight(1f).then(cursorMod),
+                        onKeyPressDown = onKeyPressDown
+                    )
+                } else {
+                    KeyboardLayout(
+                        onKeyPress = { key ->
+                            when (key) {
+                                "shift" -> isShifted = !isShifted
+                                "mode_change" -> keyboardMode = KeyboardMode.NUMBER
+                                "emoji" -> currentRoute = KeyboardRoute.Emoji
+                                else -> onKeyPress(key, isShifted)
+                            }
+                        },
+                        isShifted = isShifted,
+                        isAsciiMode = isAsciiMode,
+                        schemaName = schemaName,
+                        currentSchemaId = currentSchemaId,
+                        enterKeyText = enterKeyText,
+                        isDarkTheme = isDarkTheme,
+                        keyBackgroundColor = keyBgColor,
+                        keyTextColor = keyTextColor,
+                        specialKeyBackgroundColor = specialKeyBgColor,
+                        keyboardBackgroundColor = keyboardBgColor,
+                        modifier = Modifier.weight(1f).then(cursorMod),
+                        onKeyPressDown = onKeyPressDown,
+                        onCursorMove = onCursorMove
+                    )
+                }
+                }
+                KeyboardMode.NUMBER -> {
+                    NumberKeyboardLayout(
+                        onKeyPress = { key ->
+                            when (key) {
+                                "abc" -> keyboardMode = KeyboardMode.FULL
+                                "symbol" -> keyboardMode = KeyboardMode.SYMBOL
+                                "emoji" -> currentRoute = KeyboardRoute.Emoji
+                                else -> onKeyPress(key, false)
+                            }
+                        },
+                        keyBackgroundColor = keyBgColor,
+                        keyTextColor = keyTextColor,
+                        specialKeyBackgroundColor = specialKeyBgColor,
+                        keyboardBackgroundColor = keyboardBgColor,
+                        modifier = Modifier.weight(1f).then(cursorMod),
+                        onKeyPressDown = onKeyPressDown
+                    )
+                }
+                KeyboardMode.SYMBOL -> {
+                    SymbolKeyboardLayout(
+                        onKeyPress = { key ->
+                            when (key) {
+                                "abc" -> keyboardMode = KeyboardMode.FULL
+                                "123" -> keyboardMode = KeyboardMode.NUMBER
+                                else -> onKeyPress(key, false)
+                            }
+                        },
                         keyBackgroundColor = keyBgColor,
                         keyTextColor = keyTextColor,
                         specialKeyBackgroundColor = specialKeyBgColor,
                         keyboardBackgroundColor = keyboardBgColor,
                         modifier = Modifier.weight(1f),
-                        isDarkTheme = isDarkTheme,
-                        themeId = themeId,
-                        bottomActive = voiceBottomActive,
-                        leftActive = voiceLeftActive,
-                        rightActive = voiceRightActive,
-                        pluginName = voicePluginName,
-                        recognitionState = voiceRecognitionState,
-                        recognizedText = voiceRecognizedText,
-                        amplitude = voiceAmplitude
+                        onKeyPressDown = onKeyPressDown
                     )
-                }
-
-                else -> {
-                    val cursorMod = if (!isComposing && inputText.isEmpty() && onCursorMove != null)
-                        Modifier.pointerInput(Unit) {
-                            awaitEachGesture {
-                                val down = awaitFirstDown(requireUnconsumed = false)
-                                var totalDrag = 0f
-                                var lastPosition = down.position
-                                do {
-                                    val event = awaitPointerEvent(PointerEventPass.Initial)
-                                    val change = event.changes.firstOrNull() ?: break
-                                    if (!change.pressed) break
-                                    val dx = change.position.x - lastPosition.x
-                                    totalDrag += dx
-                                    lastPosition = change.position
-                                    // 每超过阈值就触发一次光标移动并重置累计距离
-                                    while (kotlin.math.abs(totalDrag) > 50f) {
-                                        change.consume()
-                                        onCursorMove(if (totalDrag > 0f) 1 else -1)
-                                        totalDrag = if (totalDrag > 0f) totalDrag - 50f else totalDrag + 50f
-                                    }
-                                } while (true)
-                            }
-                        } else Modifier
-                    when (keyboardMode) {
-                        KeyboardMode.FULL -> {
-                            val configuration = LocalConfiguration.current
-                            val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-                            if (isLandscape) {
-                                SplitKeyboardLayout(
-                                    onKeyPress = { key ->
-                                        when (key) {
-                                            "shift" -> isShifted = !isShifted
-                                            "mode_change" -> keyboardMode = KeyboardMode.NUMBER
-                                            "emoji" -> currentRoute = KeyboardRoute.Emoji
-                                            else -> onKeyPress(key, isShifted)
-                                        }
-                                    },
-                                    isShifted = isShifted,
-                                    isAsciiMode = isAsciiMode,
-                                    schemaName = schemaName,
-                                    enterKeyText = enterKeyText,
-                                    isDarkTheme = isDarkTheme,
-                                    keyBackgroundColor = keyBgColor,
-                                    keyTextColor = keyTextColor,
-                                    specialKeyBackgroundColor = specialKeyBgColor,
-                                    keyboardBackgroundColor = keyboardBgColor,
-                                    modifier = Modifier.weight(1f).then(cursorMod),
-                                    onKeyPressDown = onKeyPressDown
-                                )
-                            } else {
-                                KeyboardLayout(
-                                    onKeyPress = { key ->
-                                        when (key) {
-                                            "shift" -> isShifted = !isShifted
-                                            "mode_change" -> keyboardMode = KeyboardMode.NUMBER
-                                            "emoji" -> currentRoute = KeyboardRoute.Emoji
-                                            else -> onKeyPress(key, isShifted)
-                                        }
-                                    },
-                                    isShifted = isShifted,
-                                    isAsciiMode = isAsciiMode,
-                                    schemaName = schemaName,
-                                    currentSchemaId = currentSchemaId,
-                                    enterKeyText = enterKeyText,
-                                    isDarkTheme = isDarkTheme,
-                                    keyBackgroundColor = keyBgColor,
-                                    keyTextColor = keyTextColor,
-                                    specialKeyBackgroundColor = specialKeyBgColor,
-                                    keyboardBackgroundColor = keyboardBgColor,
-                                    modifier = Modifier.weight(1f).then(cursorMod),
-                                    onVoiceModeChange = onVoiceModeChange,
-                                    isSttEnabled = isSttEnabled,
-                                    isVoiceMode = isVoiceMode,
-                                    onKeyPressDown = onKeyPressDown,
-                                    onCursorMove = onCursorMove
-                                )
-                            }
-                        }
-                        KeyboardMode.NUMBER -> {
-                            NumberKeyboardLayout(
-                                onKeyPress = { key ->
-                                    when (key) {
-                                        "abc" -> keyboardMode = KeyboardMode.FULL
-                                        "symbol" -> keyboardMode = KeyboardMode.SYMBOL
-                                        "emoji" -> currentRoute = KeyboardRoute.Emoji
-                                        else -> onKeyPress(key, false)
-                                    }
-                                },
-                                keyBackgroundColor = keyBgColor,
-                                keyTextColor = keyTextColor,
-                                specialKeyBackgroundColor = specialKeyBgColor,
-                                keyboardBackgroundColor = keyboardBgColor,
-                                modifier = Modifier.weight(1f).then(cursorMod),
-                                onKeyPressDown = onKeyPressDown
-                            )
-                        }
-                        KeyboardMode.SYMBOL -> {
-                            SymbolKeyboardLayout(
-                                onKeyPress = { key ->
-                                    when (key) {
-                                        "abc" -> keyboardMode = KeyboardMode.FULL
-                                        "123" -> keyboardMode = KeyboardMode.NUMBER
-                                        else -> onKeyPress(key, false)
-                                    }
-                                },
-                                keyBackgroundColor = keyBgColor,
-                                keyTextColor = keyTextColor,
-                                specialKeyBackgroundColor = specialKeyBgColor,
-                                keyboardBackgroundColor = keyboardBgColor,
-                                modifier = Modifier.weight(1f),
-                                onKeyPressDown = onKeyPressDown
-                            )
-                        }
-                    }
                 }
             }
             // 间距：正值=键盘与底部的间隙，负值=缩减底部固定空白区
@@ -346,7 +304,7 @@ fun KeyboardView(
             // 横屏下不显示底部按钮，让分体键盘占满空间
             val configuration = LocalConfiguration.current
             val isLandscapeBottom = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-            if (showBottomButtons && !isVoiceMode && !isLandscapeBottom) {
+            if (showBottomButtons && !isLandscapeBottom) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth(),
@@ -388,10 +346,10 @@ fun KeyboardView(
                         )
                     }
                 }
-            } else if (!isVoiceMode && !isLandscapeBottom) {
+            } else if (!isLandscapeBottom) {
                 val bottomSpacer = (40 + bottomReduction).coerceAtLeast(0)
                 Spacer(modifier = Modifier.height(bottomSpacer.dp))
-            } else if (!isVoiceMode && isLandscapeBottom) {
+            } else if (isLandscapeBottom) {
                 val bottomSpacer = (15 + bottomReduction).coerceAtLeast(0)
                 Spacer(modifier = Modifier.height(bottomSpacer.dp))
             }
@@ -437,7 +395,7 @@ fun KeyboardView(
         }
 
         // 菜单覆盖层：覆盖整个键盘视图（包括候选栏）
-        if (currentRoute !is KeyboardRoute.Keyboard && !isVoiceMode) {
+        if (currentRoute !is KeyboardRoute.Keyboard) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -511,14 +469,9 @@ fun KeyboardView(
                 is KeyboardRoute.CandidatePage -> CandidatePage(
                     candidates = candidates.toList(),
                     candidateComments = candidateComments.toList(),
-                    associationCandidates = associationCandidates.toList(),
                     inputText = inputText,
                     onCandidateSelect = { index ->
                         onCandidateSelect(index)
-                        currentRoute = KeyboardRoute.Keyboard
-                    },
-                    onAssociationSelect = { index ->
-                        onAssociationSelect?.invoke(index)
                         currentRoute = KeyboardRoute.Keyboard
                     },
                     backgroundColor = candidateBarBg,

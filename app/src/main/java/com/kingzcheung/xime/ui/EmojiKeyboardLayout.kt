@@ -34,31 +34,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import com.kingzcheung.xime.clipboard.ClipboardManager
-import com.kingzcheung.xime.plugin.ExtensionManager
-import com.kingzcheung.xime.plugin.core.api.CategoryLayoutConfig
-import com.kingzcheung.xime.plugin.core.api.EmojiItem
-import com.kingzcheung.xime.plugin.core.api.PluginIcon
 
 data class EmojiCategory(
     val name: String,
     val icon: String,
-    val pluginIcon: PluginIcon? = null,
-    val emojis: List<String>,
-    val isPlugin: Boolean = false,
-    val pluginId: String? = null,
-    val emojiItems: List<EmojiItem>? = null,
-    val layoutConfig: CategoryLayoutConfig? = null
+    val emojis: List<String>
 )
 
 object EmojiData {
@@ -173,9 +159,9 @@ fun EmojiKeyboardLayout(
     var selectedTopTabIndex by remember { mutableStateOf(0) }
     var selectedSubCategoryIndex by remember { mutableStateOf(0) }
 
-    val allCategories by ExtensionManager.emojiCategoriesFlow.collectAsStateWithLifecycle()
-    val pluginCategories = allCategories.filter { it.isPlugin }
-    val builtinCategories = allCategories.filter { !it.isPlugin }
+    val allCategories = EmojiData.categories
+    val pluginCategories = emptyList<EmojiCategory>()
+    val builtinCategories = allCategories
 
     val configuration = LocalConfiguration.current
     val isLandscape =
@@ -262,30 +248,6 @@ fun EmojiKeyboardLayout(
                                 fontSize = 14.sp
                             )
                         }
-
-                        // 插件 Tab
-                        pluginCategories.forEachIndexed { index, category ->
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxHeight()
-                                    .clip(RoundedCornerShape(11.dp))
-                                    .background(
-                                        if (selectedTopTabIndex == index + 1) accentColor
-                                        else Color.Transparent
-                                    )
-                                    .clickable {
-                                        selectedTopTabIndex = index + 1
-                                        selectedSubCategoryIndex = 0
-                                    }
-                                    .padding(horizontal = 10.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = category.icon,
-                                    fontSize = 14.sp
-                                )
-                            }
-                        }
                     }
                 }
             }
@@ -304,82 +266,23 @@ fun EmojiKeyboardLayout(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
-                if (currentCategory.isPlugin && currentCategory.emojiItems != null) {
-                    val config = currentCategory.layoutConfig
-                    val defaultCols =
-                        if (currentCategory.emojiItems.any { it.imageUrl != null }) 6 else 8
-                    val columns = config?.columns ?: if (isLandscape) 15 else defaultCols
-                    val itemHeightDp = config?.itemHeightDp
-                        ?: (if (currentCategory.emojiItems.any { it.imageUrl != null }) 60 else 40)
+                val emojis = currentCategory.emojis
+                val columns = if (isLandscape) 15 else 8
 
-                    currentCategory.emojiItems.chunked(columns).forEach { rowItems ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            rowItems.forEach { item ->
-                                PluginEmojiButton(
-                                    emojiItem = item,
-                                    defaultHeightDp = itemHeightDp,
-                                    backgroundColor = backgroundColor,
-                                    textColor = textColor,
-                                    onClick = {
-                                        val imageUrl = item.imageUrl
-                                        if (imageUrl != null && onImageEmojiSelect != null) {
-                                            onImageEmojiSelect(imageUrl)
-                                        } else if (imageUrl != null) {
-                                            val success =
-                                                clipboardManager.copyImageToSystemClipboard(
-                                                    imageUrl,
-                                                    item.displayText
-                                                )
-                                            if (success) {
-                                                Toast.makeText(
-                                                    context,
-                                                    "已复制表情，可粘贴发送",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                            } else {
-                                                Toast.makeText(
-                                                    context,
-                                                    "复制失败",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                            }
-                                        } else {
-                                            onEmojiSelect(item.insertText)
-                                        }
-                                    },
-                                    modifier = Modifier.weight(1f)
-                                )
-                            }
-                            repeat(columns - rowItems.size) {
-                                Spacer(modifier = Modifier
-                                    .weight(1f)
-                                    .height((itemHeightDp).dp))
-                            }
+                emojis.chunked(columns).forEach { rowEmojis ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        rowEmojis.forEach { emoji ->
+                            EmojiButton(
+                                emoji = emoji,
+                                onClick = { onEmojiSelect(emoji) },
+                                modifier = Modifier.weight(1f)
+                            )
                         }
-                        Spacer(modifier = Modifier.height(2.dp))
-                    }
-                } else {
-                    val emojis = currentCategory.emojis
-                    val columns = if (isLandscape) 15 else 8
-
-                    emojis.chunked(columns).forEach { rowEmojis ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(2.dp)
-                        ) {
-                            rowEmojis.forEach { emoji ->
-                                EmojiButton(
-                                    emoji = emoji,
-                                    onClick = { onEmojiSelect(emoji) },
-                                    modifier = Modifier.weight(1f)
-                                )
-                            }
-                            repeat(columns - rowEmojis.size) {
-                                Spacer(modifier = Modifier.weight(1f))
-                            }
+                        repeat(columns - rowEmojis.size) {
+                            Spacer(modifier = Modifier.weight(1f))
                         }
                     }
                 }
@@ -406,7 +309,6 @@ fun EmojiKeyboardLayout(
                     builtinCategories.forEachIndexed { index, category ->
                         EmojiCategoryTab(
                             icon = category.icon,
-                            pluginIcon = category.pluginIcon,
                             isSelected = index == selectedSubCategoryIndex,
                             onClick = { selectedSubCategoryIndex = index },
                             backgroundColor = backgroundColor,
@@ -437,15 +339,12 @@ fun EmojiKeyboardLayout(
 @Composable
 fun EmojiCategoryTab(
     icon: String,
-    pluginIcon: PluginIcon? = null,
     isSelected: Boolean,
     onClick: () -> Unit,
     backgroundColor: Color,
     textColor: Color,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
-
     Box(
         modifier = modifier
             .height(30.dp)
@@ -457,25 +356,11 @@ fun EmojiCategoryTab(
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        if (pluginIcon?.assetName != null) {
-            AsyncImage(
-                model = ImageRequest.Builder(context)
-                    .data(pluginIcon.assetName)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = icon,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(4.dp),
-                contentScale = ContentScale.Fit
-            )
-        } else {
-            Text(
-                text = pluginIcon?.text ?: icon,
-                fontSize = 16.sp,
-                textAlign = TextAlign.Center
-            )
-        }
+        Text(
+            text = icon,
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center
+        )
     }
 }
 
@@ -497,67 +382,5 @@ fun EmojiButton(
             fontSize = 22.sp,
             textAlign = TextAlign.Center
         )
-    }
-}
-
-@Composable
-fun PluginEmojiButton(
-    emojiItem: EmojiItem,
-    onClick: () -> Unit,
-    defaultHeightDp: Int = 40,
-    backgroundColor: Color = Color.Unspecified,
-    textColor: Color = Color.Unspecified,
-    modifier: Modifier = Modifier
-) {
-    val context = LocalContext.current
-    val config = emojiItem.displayConfig
-    val heightDp = config?.heightDp ?: defaultHeightDp
-    val aspectRatio = config?.aspectRatio
-
-    val isLightTheme =
-        (backgroundColor.red + backgroundColor.green + backgroundColor.blue) / 3f > 0.5f
-    val buttonBackgroundColor = if (isLightTheme) Color.White.copy(alpha = 0.8f)
-    else Color.LightGray.copy(alpha = 0.15f)
-    val contentColor = if (isLightTheme) Color.Black else textColor
-
-    Box(
-        modifier = modifier
-            .height(heightDp.dp)
-            .then(
-                if (emojiItem.imageUrl != null && aspectRatio != null) Modifier.aspectRatio(
-                    aspectRatio
-                )
-                else if (emojiItem.imageUrl != null) Modifier.aspectRatio(1f)
-                else Modifier.fillMaxWidth()
-            )
-            .clip(RoundedCornerShape(4.dp))
-            .background(buttonBackgroundColor)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 4.dp, vertical = 2.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        if (emojiItem.imageUrl != null) {
-            AsyncImage(
-                model = ImageRequest.Builder(context)
-                    .data(emojiItem.imageUrl)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = emojiItem.displayText,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(2.dp),
-                contentScale = ContentScale.Fit
-            )
-        } else {
-            Text(
-                text = emojiItem.displayText,
-                fontSize = 12.sp,
-                color = contentColor,
-                textAlign = TextAlign.Center,
-                maxLines = 2,
-                softWrap = true,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
     }
 }

@@ -26,6 +26,15 @@ plugins {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
+        maven {
+            url = uri("https://maven.aliyun.com/repository/public/")
+        }
+        maven {
+            url = uri("https://maven.aliyun.com/repository/google")
+        }
+        maven {
+            url = uri("https://maven.aliyun.com/repository/central")
+        }
         google()
         mavenCentral()
     }
@@ -33,6 +42,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "Xime"
 include(":app")
-include(":plugin-core")
-include(":plugins:meme-bunny")
-include(":plugins:kaomoji")

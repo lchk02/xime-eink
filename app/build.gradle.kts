@@ -12,96 +12,6 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
-val onnxVersion = "1.20.0"
-val onnxAarUrl = "https://repo1.maven.org/maven2/com/microsoft/onnxruntime/onnxruntime-android/${onnxVersion}/onnxruntime-android-${onnxVersion}.aar"
-
-val downloadOnnx by tasks.registering {
-    val cppDir = file("src/main/jni/onnxruntime")
-    val jniLibsDir = file("src/main/jniLibs")
-    
-    outputs.dir(cppDir)
-    outputs.dir(jniLibsDir)
-    
-    doLast {
-        val tmpDir = temporaryDir
-        val aarFile = File(tmpDir, "onnxruntime.aar")
-        
-        val universalSo = file("src/main/jniLibs/arm64-v8a/libonnxruntime.so")
-        if (universalSo.exists()) {
-            println("ONNX Runtime files already exist, skipping download")
-            return@doLast
-        }
-        
-        println("Downloading ONNX Runtime ${onnxVersion}...")
-        
-        ant.invokeMethod("get", mapOf("src" to onnxAarUrl, "dest" to aarFile))
-        
-        copy {
-            from(zipTree(aarFile))
-            into(tmpDir)
-        }
-        
-        copy {
-            from(File(tmpDir, "headers"))
-            into(File(cppDir, "include"))
-        }
-        
-        val abis = listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
-        abis.forEach { abi ->
-            copy {
-                from(File(File(tmpDir, "jni"), abi))
-                include("libonnxruntime.so")
-                into(File(File(cppDir, "lib"), abi))
-            }
-            copy {
-                from(File(File(tmpDir, "jni"), abi))
-                include("libonnxruntime.so")
-                into(File(jniLibsDir, abi))
-            }
-        }
-        
-        println("ONNX Runtime downloaded successfully")
-    }
-}
-
-val buildSherpaOnnx by tasks.registering {
-    val jniLibsDir = file("src/main/jniLibs")
-    val sherpaOnnxSoArm64 = file("src/main/jniLibs/arm64-v8a/libsherpa-onnx-jni.so")
-    val sherpaOnnxSoArmV7 = file("src/main/jniLibs/armeabi-v7a/libsherpa-onnx-jni.so")
-    
-    outputs.file(sherpaOnnxSoArm64)
-    outputs.file(sherpaOnnxSoArmV7)
-    
-    dependsOn(downloadOnnx)
-    
-    doLast {
-        if (sherpaOnnxSoArm64.exists() && sherpaOnnxSoArmV7.exists()) {
-            println("sherpa-onnx JNI libraries already exist, skipping build")
-            return@doLast
-        }
-        
-        println("Building sherpa-onnx JNI libraries...")
-        
-        val buildScript = File(rootDir, "build-sherpa-onnx.sh")
-        if (!buildScript.exists()) {
-            println("ERROR: build script not found: ${buildScript.absolutePath}")
-            return@doLast
-        }
-        
-        val process = ProcessBuilder("bash", buildScript.absolutePath)
-            .directory(rootDir)
-            .redirectErrorStream(true)
-            .start()
-        
-        val output = process.inputStream.bufferedReader().readText()
-        println(output)
-        
-        if (process.waitFor() != 0) {
-            println("WARNING: sherpa-onnx build failed. ASR will use online mode only.")
-        }
-    }
-}
-
 val buildTrie by tasks.registering {
     val inputFile = file("src/main/assets/english.txt")
     val outputFile = file("src/main/assets/english_trie.bin")
@@ -183,95 +93,7 @@ val buildTrie by tasks.registering {
 }
 
 tasks.named("preBuild").configure {
-    dependsOn(downloadOnnx)
-    dependsOn(buildSherpaOnnx)
     dependsOn(buildTrie)
-}
-
-tasks.register("copyPluginsToAssets", Copy::class) {
-    group = "plugin-dev"
-    description = "Manually copy plugin APKs to assets for debugging"
-    
-    val pluginProjects = listOf(
-        ":plugins:meme-bunny",
-        ":plugins:kaomoji"
-    )
-    
-    pluginProjects.forEach { pluginPath ->
-        dependsOn(project(pluginPath).tasks.getByName("assembleDebug"))
-        from(project(pluginPath).layout.buildDirectory.dir("outputs/apk/debug")) {
-            include("*universal*.apk")
-        }
-    }
-    
-    into(layout.projectDirectory.dir("src/main/assets/plugins"))
-    
-    doFirst {
-        layout.projectDirectory.dir("src/main/assets/plugins").asFile.mkdirs()
-    }
-}
-
-tasks.register("clearPlugins", DefaultTask::class) {
-    group = "plugin-dev"
-    description = "Clear all plugin data from device (requires connected device with adb)"
-    
-    doLast {
-        val packageName = "com.kingzcheung.xime"
-        val pluginsDir = "/data/data/$packageName/files/plugins"
-        
-        println("=== Clearing Xime plugin data ===")
-        
-        val devicesCheck = executeCommand("adb devices")
-        if (!devicesCheck.contains("device")) {
-            println("ERROR: No connected device detected")
-        } else {
-            println("Clearing plugin directory...")
-            executeCommand("adb shell rm -rf $pluginsDir")
-            
-            println("Clearing plugin config...")
-            executeCommand("adb shell rm -rf /data/data/$packageName/shared_prefs/plugin_*.xml")
-            executeCommand("adb shell rm -rf /data/data/$packageName/shared_prefs/plugins.xml")
-            
-            println("=== Done ===")
-            println("Please restart Xime app to reload plugins")
-        }
-    }
-}
-
-tasks.register("uninstallApp", DefaultTask::class) {
-    group = "plugin-dev"
-    description = "Completely uninstall Xime app (clear all data)"
-    
-    doLast {
-        val packageName = "com.kingzcheung.xime"
-        
-        println("=== Completely uninstalling Xime app ===")
-        
-        val devicesCheck = executeCommand("adb devices")
-        if (!devicesCheck.contains("device")) {
-            println("ERROR: No connected device detected")
-        } else {
-            println("Uninstalling $packageName...")
-            val result = executeCommand("adb uninstall $packageName")
-            println(result)
-            
-            println("=== Done ===")
-            println("All app data cleared. Reinstall to start fresh.")
-        }
-    }
-}
-
-fun executeCommand(command: String): String {
-    return try {
-        val parts = command.split(" ")
-        val process = ProcessBuilder(parts)
-            .directory(rootDir)
-            .redirectErrorStream(true)
-            .start()
-        process.inputStream.bufferedReader().readText()
-    } catch (e: Exception) {
-        ""
-    }
 }
 
 
@@ -399,7 +221,6 @@ android.applicationVariants.all {
 }
 
 dependencies {
-    implementation(project(":plugin-core"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)

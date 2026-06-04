@@ -4,25 +4,21 @@
 
 set(BOOST_VERSION 1.89.0)
 
-if(NOT EXISTS "boost-${BOOST_VERSION}.tar.xz")
-  message(STATUS "Downloading Boost ${BOOST_VERSION} ......")
-  file(
-    DOWNLOAD
-    "https://github.com/boostorg/boost/releases/download/boost-${BOOST_VERSION}/boost-${BOOST_VERSION}-cmake.tar.xz"
-    boost-${BOOST_VERSION}.tar.xz
-    EXPECTED_HASH
-      SHA256=67acec02d0d118b5de9eb441f5fb707b3a1cdd884be00ca24b9a73c995511f74
-    SHOW_PROGRESS)
+if(NOT EXISTS "${CMAKE_SOURCE_DIR}/boost/boost/algorithm")
+  set(BOOST_ARCHIVE "boost_${BOOST_VERSION}.tar.bz2")
+  if(NOT EXISTS "${BOOST_ARCHIVE}")
+    message(STATUS "Downloading Boost ${BOOST_VERSION} ......")
+    file(
+      DOWNLOAD
+      "https://archives.boost.io/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION}.tar.bz2"
+      "${BOOST_ARCHIVE}"
+      SHOW_PROGRESS)
+  endif()
 
-  message(STATUS "Remove older version Boost")
-  file(REMOVE_RECURSE "${CMAKE_SOURCE_DIR}/boost")
-endif()
-
-if(NOT EXISTS "${CMAKE_SOURCE_DIR}/boost")
   message(STATUS "Extracting Boost ${BOOST_VERSION} ......")
-  file(ARCHIVE_EXTRACT INPUT boost-${BOOST_VERSION}.tar.xz DESTINATION
-       ${CMAKE_SOURCE_DIR})
-  file(RENAME "boost-${BOOST_VERSION}" boost)
+  file(ARCHIVE_EXTRACT INPUT "${BOOST_ARCHIVE}" DESTINATION
+       "${CMAKE_SOURCE_DIR}")
+  file(RENAME "boost_${BOOST_VERSION}" boost)
 endif()
 
 set(BOOST_INCLUDE_LIBRARIES
@@ -37,4 +33,13 @@ set(BOOST_INCLUDE_LIBRARIES
     utility
     uuid)
 
-add_subdirectory(boost EXCLUDE_FROM_ALL)
+if(EXISTS "${CMAKE_SOURCE_DIR}/boost/CMakeLists.txt")
+  add_subdirectory(boost EXCLUDE_FROM_ALL)
+else()
+  foreach(__lib IN LISTS BOOST_INCLUDE_LIBRARIES)
+    if(NOT TARGET Boost::${__lib})
+      add_library(Boost::${__lib} INTERFACE IMPORTED)
+      target_include_directories(Boost::${__lib} INTERFACE "${CMAKE_SOURCE_DIR}/boost")
+    endif()
+  endforeach()
+endif()

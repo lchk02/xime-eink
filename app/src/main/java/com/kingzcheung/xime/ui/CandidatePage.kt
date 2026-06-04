@@ -36,10 +36,8 @@ import androidx.compose.ui.unit.sp
 fun CandidatePage(
     candidates: List<String>,
     candidateComments: List<String> = emptyList(),
-    associationCandidates: List<String> = emptyList(),
     inputText: String,
     onCandidateSelect: (Int) -> Unit,
-    onAssociationSelect: ((Int) -> Unit)? = null,
     backgroundColor: Color,
     textColor: Color,
     hasNextPage: Boolean = false,
@@ -154,25 +152,6 @@ fun CandidatePage(
                             text = candidate,
                             comment = candidateComments.getOrElse(index) { "" },
                             onClick = { onCandidateSelect(index) },
-                            textColor = textColor
-                        )
-                    }
-                }
-            }
-
-            if (associationCandidates.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(8.dp))
-
-                FlowRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    associationCandidates.forEachIndexed { index, candidate ->
-                        CandidatePageItem(
-                            text = candidate,
-                            comment = "",
-                            onClick = { onAssociationSelect?.invoke(index) },
                             textColor = textColor
                         )
                     }
