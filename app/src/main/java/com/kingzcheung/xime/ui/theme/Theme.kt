@@ -44,19 +44,19 @@ fun XimeTheme(
         primary = theme.primaryDark,
         onPrimary = if (currentThemeId == "eink") Color.Black else Color(0xFF381E72),
         primaryContainer = theme.primaryContainerDark,
-        onPrimaryContainer = if (currentThemeId == "eink") Color.Black else Color(0xFFEADDFF),
+        onPrimaryContainer = if (currentThemeId == "eink") Color(0xFFE0E0E0) else Color(0xFFEADDFF),
         secondary = theme.primaryContainerDark,
-        onSecondary = if (currentThemeId == "eink") Color.Black else Color(0xFFEADDFF),
+        onSecondary = if (currentThemeId == "eink") Color(0xFFE0E0E0) else Color(0xFFEADDFF),
         tertiary = theme.primaryContainerDark,
-        onTertiary = if (currentThemeId == "eink") Color.Black else Color(0xFFEADDFF),
+        onTertiary = if (currentThemeId == "eink") Color(0xFFE0E0E0) else Color(0xFFEADDFF),
         background = Color(0xFF1C1B1F),
         onBackground = Color(0xFFE6E1E5),
         surface = theme.surfaceDark,
-        onSurface = Color(0xFFE6E1E5),
+        onSurface = if (currentThemeId == "eink") Color(0xFFE0E0E0) else Color(0xFFE6E1E5),
         surfaceVariant = theme.primaryContainerDark.copy(alpha = 0.5f),
-        onSurfaceVariant = if (currentThemeId == "eink") Color.Black else Color(0xFFCAC4D0),
-        outline = if (currentThemeId == "eink") Color(0xFF333333) else Color(0xFF938F99),
-        outlineVariant = if (currentThemeId == "eink") Color(0xFF777777) else Color(0xFF49454F)
+        onSurfaceVariant = if (currentThemeId == "eink") Color(0xFFAAAAAA) else Color(0xFFCAC4D0),
+        outline = if (currentThemeId == "eink") Color(0xFF555555) else Color(0xFF938F99),
+        outlineVariant = if (currentThemeId == "eink") Color(0xFF444444) else Color(0xFF49454F)
     )
 
     MaterialTheme(

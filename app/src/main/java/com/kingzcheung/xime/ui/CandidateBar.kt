@@ -297,10 +297,11 @@ fun CandidateBar(
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = "更多",
-                                color = if (isMorePressed) textColor.copy(alpha = 0.6f) else textColor,
-                                fontSize = 11.sp
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowDown,
+                                contentDescription = "更多候选项",
+                                tint = if (isMorePressed) textColor.copy(alpha = 0.6f) else textColor,
+                                modifier = Modifier.size(18.dp)
                             )
                         }
                     }

@@ -9,10 +9,6 @@ object SettingsPreferences {
     private const val KEY_DEPLOYMENT_DONE = "deployment_done"
     private const val KEY_DARK_MODE = "dark_mode"
     
-    private const val KEY_SOUND_ENABLED = "sound_enabled"
-    private const val KEY_SOUND_VOLUME = "sound_volume"
-    private const val KEY_VIBRATION_ENABLED = "vibration_enabled"
-    private const val KEY_VIBRATION_INTENSITY = "vibration_intensity"
     private const val KEY_KEYBOARD_THEME = "keyboard_theme"
     private const val KEY_SHOW_BOTTOM_BUTTONS = "show_bottom_buttons"
     
@@ -26,8 +22,6 @@ object SettingsPreferences {
     private const val KEY_STT_KEEP_MODEL_IN_RAM = "stt_keep_model_in_ram"
     
     private const val KEY_PUNCTUATION_MODEL_ENABLED = "punctuation_model_enabled"
-    
-    private const val KEY_SWIPE_DOWN_SHOW_ROOTS = "swipe_down_show_roots"
     
     private const val KEY_KEYBOARD_HEIGHT_DP = "keyboard_height_dp"
     private const val KEY_KEYBOARD_HEIGHT_DP_LANDSCAPE = "keyboard_height_dp_landscape"
@@ -86,38 +80,6 @@ object SettingsPreferences {
     
     fun setDarkMode(context: Context, mode: Int) {
         getPrefs(context).edit().putInt(KEY_DARK_MODE, mode).apply()
-    }
-    
-    fun isSoundEnabled(context: Context): Boolean {
-        return getPrefs(context).getBoolean(KEY_SOUND_ENABLED, true)
-    }
-    
-    fun setSoundEnabled(context: Context, enabled: Boolean) {
-        getPrefs(context).edit().putBoolean(KEY_SOUND_ENABLED, enabled).apply()
-    }
-    
-    fun getSoundVolume(context: Context): Int {
-        return getPrefs(context).getInt(KEY_SOUND_VOLUME, 50)
-    }
-    
-    fun setSoundVolume(context: Context, volume: Int) {
-        getPrefs(context).edit().putInt(KEY_SOUND_VOLUME, volume).apply()
-    }
-    
-    fun isVibrationEnabled(context: Context): Boolean {
-        return getPrefs(context).getBoolean(KEY_VIBRATION_ENABLED, true)
-    }
-    
-    fun setVibrationEnabled(context: Context, enabled: Boolean) {
-        getPrefs(context).edit().putBoolean(KEY_VIBRATION_ENABLED, enabled).apply()
-    }
-    
-    fun getVibrationIntensity(context: Context): Int {
-        return getPrefs(context).getInt(KEY_VIBRATION_INTENSITY, 50)
-    }
-    
-    fun setVibrationIntensity(context: Context, intensity: Int) {
-        getPrefs(context).edit().putInt(KEY_VIBRATION_INTENSITY, intensity).apply()
     }
     
     fun getKeyboardTheme(context: Context): String {
@@ -209,14 +171,6 @@ object SettingsPreferences {
     
     fun setPunctuationModelEnabled(context: Context, enabled: Boolean) {
         getPrefs(context).edit().putBoolean(KEY_PUNCTUATION_MODEL_ENABLED, enabled).apply()
-    }
-    
-    fun isSwipeDownShowRootsEnabled(context: Context): Boolean {
-        return getPrefs(context).getBoolean(KEY_SWIPE_DOWN_SHOW_ROOTS, false)
-    }
-    
-    fun setSwipeDownShowRootsEnabled(context: Context, enabled: Boolean) {
-        getPrefs(context).edit().putBoolean(KEY_SWIPE_DOWN_SHOW_ROOTS, enabled).apply()
     }
     
     fun getKeyboardHeightDp(context: Context): Int {

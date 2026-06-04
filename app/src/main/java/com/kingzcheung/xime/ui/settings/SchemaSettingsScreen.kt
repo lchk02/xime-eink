@@ -32,6 +32,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -47,6 +48,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -59,6 +61,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -298,6 +301,7 @@ fun SchemaSettingsContent(
                             expanded = showMenu,
                             onDismissRequest = { showMenu = false },
                             offset = DpOffset(0.dp, 4.dp),
+                            containerColor = Color.White,
                             shape = RoundedCornerShape(12.dp)
                         ) {
                             DropdownMenuItem(
@@ -432,13 +436,20 @@ fun SchemaSettingsContent(
             }
         }
 
+        val isEink = MaterialTheme.colorScheme.primary == Color.Black
         Button(
             onClick = { viewModel.deploySchema() },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 12.dp)
                 .height(48.dp),
-            enabled = !uiState.isDeploying
+            enabled = !uiState.isDeploying,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (isEink) Color(0xFFDDDDDD) else MaterialTheme.colorScheme.primary,
+                contentColor = if (isEink) Color.Black else MaterialTheme.colorScheme.onPrimary,
+                disabledContainerColor = if (isEink) Color(0xFFEEEEEE) else MaterialTheme.colorScheme.primary.copy(alpha = 0.38f),
+                disabledContentColor = if (isEink) Color(0xFF888888) else MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.38f)
+            )
         ) {
             if (uiState.isDeploying) {
                 CircularProgressIndicator(
@@ -559,9 +570,21 @@ private fun SchemaToggleItem(
                 }
             }
 
+            val isEink = MaterialTheme.colorScheme.primary == Color.Black
+            val switchColors = if (isEink) {
+                SwitchDefaults.colors(
+                    checkedThumbColor = Color(0xFF333333),
+                    checkedTrackColor = Color(0xFFBBBBBB),
+                    uncheckedThumbColor = Color(0xFF888888),
+                    uncheckedTrackColor = Color(0xFFE0E0E0)
+                )
+            } else {
+                SwitchDefaults.colors()
+            }
             Switch(
                 checked = enabled,
-                onCheckedChange = { onToggle() }
+                onCheckedChange = { onToggle() },
+                colors = switchColors
             )
             IconButton(
                 onClick = { showDeleteConfirm = true },

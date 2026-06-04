@@ -103,7 +103,6 @@ fun KeyboardView(
     onSwitchSchema: ((String) -> Unit)? = null,
     onHideKeyboard: (() -> Unit)? = null,
     onSwitchKeyboard: (() -> Unit)? = null,
-    onCommitImage: ((String) -> Unit)? = null,
     uiStateProvider: () -> InputUIState,
     onPageDown: (() -> Unit)? = null,
     onPageUp: (() -> Unit)? = null,
@@ -157,7 +156,6 @@ fun KeyboardView(
                         is KeyboardRoute.Clipboard -> KeyboardRoute.Keyboard
                         is KeyboardRoute.CandidatePage -> KeyboardRoute.Keyboard
                         is KeyboardRoute.ToolbarCustomize -> KeyboardRoute.Keyboard
-                        is KeyboardRoute.Emoji -> KeyboardRoute.Keyboard
                         is KeyboardRoute.SplitWords -> KeyboardRoute.Keyboard
                         else -> KeyboardRoute.Keyboard
                     }
@@ -177,7 +175,6 @@ fun KeyboardView(
                 toolbarActions = toolbarButtons.mapNotNull { id ->
                     val button = ToolbarButton.fromId(id) ?: return@mapNotNull null
                     val onClick: () -> Unit = when (button) {
-                        ToolbarButton.EMOJI -> ({ currentRoute = KeyboardRoute.Emoji })
                         ToolbarButton.CLIPBOARD -> ({ currentRoute = KeyboardRoute.Clipboard(0) })
                         ToolbarButton.SCHEMA -> ({ currentRoute = KeyboardRoute.SchemaList })
                         ToolbarButton.QUICK_PHRASE -> ({ currentRoute = KeyboardRoute.Clipboard(1) })
@@ -218,7 +215,7 @@ fun KeyboardView(
                             when (key) {
                                 "shift" -> isShifted = !isShifted
                                 "mode_change" -> keyboardMode = KeyboardMode.NUMBER
-                                "emoji" -> currentRoute = KeyboardRoute.Emoji
+                                "symbol" -> keyboardMode = KeyboardMode.SYMBOL
                                 else -> onKeyPress(key, isShifted)
                             }
                         },
@@ -240,7 +237,7 @@ fun KeyboardView(
                             when (key) {
                                 "shift" -> isShifted = !isShifted
                                 "mode_change" -> keyboardMode = KeyboardMode.NUMBER
-                                "emoji" -> currentRoute = KeyboardRoute.Emoji
+                                "symbol" -> keyboardMode = KeyboardMode.SYMBOL
                                 else -> onKeyPress(key, isShifted)
                             }
                         },
@@ -266,7 +263,6 @@ fun KeyboardView(
                             when (key) {
                                 "abc" -> keyboardMode = KeyboardMode.FULL
                                 "symbol" -> keyboardMode = KeyboardMode.SYMBOL
-                                "emoji" -> currentRoute = KeyboardRoute.Emoji
                                 else -> onKeyPress(key, false)
                             }
                         },
@@ -416,7 +412,6 @@ fun KeyboardView(
                 onClipboard = { currentRoute = KeyboardRoute.Clipboard(0); onClipboard?.invoke() },
                 onQuickSend = { currentRoute = KeyboardRoute.Clipboard(1); onQuickSend?.invoke() },
                 onKeyboardResize = { onKeyboardResize?.invoke(); currentRoute = KeyboardRoute.Keyboard },
-                onEmoji = { currentRoute = KeyboardRoute.Emoji },
                 onReloadConfig = { onReloadConfig?.invoke(); currentRoute = KeyboardRoute.Keyboard },
                 onSettings = { onSettings?.invoke(); currentRoute = KeyboardRoute.Keyboard },
                 onSchemaList = { currentRoute = KeyboardRoute.SchemaList },
@@ -492,21 +487,6 @@ fun KeyboardView(
                     onNavigateToQuickSend = { currentRoute = KeyboardRoute.Clipboard(1) },
                     onSelectChar = { char -> onCommitText?.invoke(char) },
                     onDeleteText = { count -> onDeleteText?.invoke(count) },
-                    bottomPaddingDp = keyboardBottomPaddingDp,
-                    modifier = Modifier.fillMaxWidth().fillMaxHeight()
-                )
-                is KeyboardRoute.Emoji -> EmojiKeyboardLayout(
-                    onEmojiSelect = { emoji ->
-                        if (emoji == "delete") {
-                            onKeyPress("delete", false)
-                        } else {
-                            onClipboardSelect?.invoke(emoji)
-                        }
-                    },
-                    onImageEmojiSelect = onCommitImage,
-                    onBack = { currentRoute = KeyboardRoute.Keyboard },
-                    backgroundColor = candidateBarBg,
-                    textColor = keyTextColor,
                     bottomPaddingDp = keyboardBottomPaddingDp,
                     modifier = Modifier.fillMaxWidth().fillMaxHeight()
                 )

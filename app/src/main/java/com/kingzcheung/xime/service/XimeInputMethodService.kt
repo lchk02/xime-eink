@@ -10,7 +10,6 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
-import android.view.inputmethod.InputContentInfo
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.compose.foundation.layout.Box
@@ -26,7 +25,6 @@ import androidx.compose.ui.platform.ComposeView
 import com.kingzcheung.xime.ui.LocalStretchFactor
 import androidx.compose.ui.unit.dp
 import com.kingzcheung.xime.ui.KeyboardResizeOverlay
-import androidx.core.content.FileProvider
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -54,7 +52,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.FileInputStream
 
 class XimeInputMethodService : InputMethodService(), LifecycleOwner, SavedStateRegistryOwner {
 
@@ -92,8 +89,6 @@ class XimeInputMethodService : InputMethodService(), LifecycleOwner, SavedStateR
     private val calculatorEngine = com.kingzcheung.xime.calculator.CalculatorEngine()
 
     private var sharedPrefsListener: android.content.SharedPreferences.OnSharedPreferenceChangeListener? = null
-
-    private val feedbackManager = FeedbackManager(this)
 
     private fun loadDarkModePreference() {
         val isLandscape = resources.configuration.screenWidthDp > resources.configuration.screenHeightDp
@@ -163,8 +158,6 @@ class XimeInputMethodService : InputMethodService(), LifecycleOwner, SavedStateR
 
         FileLogger.init(this)
         FileLogger.i(TAG, "XimeInputMethodService created")
-
-        feedbackManager.initialize()
 
         loadDarkModePreference()
         registerSharedPrefsListener()
@@ -412,7 +405,6 @@ class XimeInputMethodService : InputMethodService(), LifecycleOwner, SavedStateR
                                 handleKeyPress(key, isShifted)
                             },
                             onKeyPressDown = { key ->
-                                feedbackManager.performKeyPressDownEffect(key)
                             },
                             onCursorMove = { direction ->
                                 serviceScope.launch(Dispatchers.Main) {
@@ -492,17 +484,6 @@ class XimeInputMethodService : InputMethodService(), LifecycleOwner, SavedStateR
                             },
                             onPageDown = { pageDown() },
                             onPageUp = { pageUp() },
-                            onCommitImage = { imagePath ->
-                                val success = commitImage(imagePath)
-                                if (!success) {
-                                    android.widget.Toast.makeText(
-                                        this@XimeInputMethodService,
-                                        "发送失败，已复制到剪贴板",
-                                        android.widget.Toast.LENGTH_SHORT
-                                    ).show()
-                                    clipboardManager.copyImageToSystemClipboard(imagePath)
-                                }
-                            },
                                 isDeploying = state.isDeploying,
                                 deploymentMessage = state.deploymentMessage,
                                 onDismissDeploying = {
@@ -697,7 +678,6 @@ class XimeInputMethodService : InputMethodService(), LifecycleOwner, SavedStateR
         sharedPrefsListener?.let {
             SettingsPreferences.getPrefsPublic(this).unregisterOnSharedPreferenceChangeListener(it)
         }
-        feedbackManager.release()
         rimeEngine.destroy()
         serviceScope.cancel()
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
@@ -924,11 +904,6 @@ class XimeInputMethodService : InputMethodService(), LifecycleOwner, SavedStateR
                 "abc" -> {
                     calculatorEngine.clear()
                     updateCalculatorCandidates()
-                }
-                "emoji" -> {
-                    withContext(Dispatchers.Main) {
-                        commitText("😊")
-                    }
                 }
                 else -> {
                     if (!key.matches(Regex("[0-9]")) && key !in listOf("+", "-", "*", "/", ".")) {
@@ -1258,52 +1233,6 @@ class XimeInputMethodService : InputMethodService(), LifecycleOwner, SavedStateR
 
     private fun commitText(text: String) {
         currentInputConnection?.commitText(text, 1)
-    }
-
-    private fun commitImage(imagePath: String, mimeType: String = "image/jpeg"): Boolean {
-        return try {
-            val imageFile = File(imagePath)
-            if (!imageFile.exists()) {
-                Log.e(TAG, "Image file not found: $imagePath")
-                return false
-            }
-
-            val cacheDir = File(cacheDir, "emoji_cache")
-            if (!cacheDir.exists()) {
-                cacheDir.mkdirs()
-            }
-
-            val cacheFile = File(cacheDir, imageFile.name)
-            FileInputStream(imageFile).use { input ->
-                cacheFile.outputStream().use { output ->
-                    input.copyTo(output)
-                }
-            }
-
-            val uri = FileProvider.getUriForFile(
-                this,
-                "$packageName.fileprovider",
-                cacheFile
-            )
-
-            val inputContentInfo = InputContentInfo(
-                uri,
-                android.content.ClipDescription("emoji_image", arrayOf(mimeType)),
-                null
-            )
-
-            val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
-                InputConnection.INPUT_CONTENT_GRANT_READ_URI_PERMISSION
-            } else {
-                0
-            }
-
-            currentInputConnection?.commitContent(inputContentInfo, flags, null) ?: false
-
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to commit image", e)
-            false
-        }
     }
 
     private fun selectClipboardItem(text: String) {

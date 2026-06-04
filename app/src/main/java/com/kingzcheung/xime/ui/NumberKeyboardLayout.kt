@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Backspace
-import androidx.compose.material.icons.filled.EmojiEmotions
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -112,15 +111,15 @@ fun NumberKeyboardLayout(
                         listOf("4","5","6").forEach { k -> KeyButton(text = k, onClick = { onKeyPress(k) }, backgroundColor = keyBackgroundColor, textColor = keyTextColor, modifier = Modifier.weight(1f), onPress = { onKeyPressDown?.invoke(k) }) }
                         KeyButton(text = "符号", onClick = { onKeyPress("symbol") }, backgroundColor = specialKeyBackgroundColor, textColor = keyTextColor, modifier = Modifier.weight(1f), onPress = { onKeyPressDown?.invoke("symbol") })
                     }
-                    // 第三行：符号 | 7 | 8 | 9 | 表情
-                    Row(
-                        modifier = Modifier.fillMaxWidth().weight(1f),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        KeyButton(text = "*", onClick = { onKeyPress("*") }, backgroundColor = keyBackgroundColor, textColor = keyTextColor, modifier = Modifier.weight(1f), onPress = { onKeyPressDown?.invoke("*") })
-                        listOf("7","8","9").forEach { k -> KeyButton(text = k, onClick = { onKeyPress(k) }, backgroundColor = keyBackgroundColor, textColor = keyTextColor, modifier = Modifier.weight(1f), onPress = { onKeyPressDown?.invoke(k) }) }
-                        IconKeyButton(icon = rememberVectorPainter(Icons.Default.EmojiEmotions), onClick = { onKeyPress("emoji") }, backgroundColor = specialKeyBackgroundColor, iconColor = keyTextColor, modifier = Modifier.weight(1f), onPress = { onKeyPressDown?.invoke("emoji") })
-                    }
+            // 第三行：符号 | 7 | 8 | 9 | =
+            Row(
+                modifier = Modifier.fillMaxWidth().weight(1f),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                KeyButton(text = "*", onClick = { onKeyPress("*") }, backgroundColor = keyBackgroundColor, textColor = keyTextColor, modifier = Modifier.weight(1f), onPress = { onKeyPressDown?.invoke("*") })
+                listOf("7","8","9").forEach { k -> KeyButton(text = k, onClick = { onKeyPress(k) }, backgroundColor = keyBackgroundColor, textColor = keyTextColor, modifier = Modifier.weight(1f), onPress = { onKeyPressDown?.invoke(k) }) }
+                KeyButton(text = "=", onClick = { onKeyPress("=") }, backgroundColor = keyBackgroundColor, textColor = keyTextColor, modifier = Modifier.weight(1f), onPress = { onKeyPressDown?.invoke("=") })
+            }
                     // 第四行：返回 | 符号切换 | 0 | . | 确定
                     Row(
                         modifier = Modifier.fillMaxWidth().weight(1f),
@@ -244,7 +243,7 @@ private fun NumberRows(
             )
         }
 
-        // 第三行：符号 | 7 | 8 | 9 | 表情
+        // 第三行：符号 | 7 | 8 | 9 | =
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -269,13 +268,13 @@ private fun NumberRows(
                     onPress = { onKeyPressDown?.invoke(key) }
                 )
             }
-            IconKeyButton(
-                icon = rememberVectorPainter(Icons.Default.EmojiEmotions),
-                onClick = { onKeyPress("emoji") },
-                backgroundColor = specialKeyBackgroundColor,
-                iconColor = keyTextColor,
+            KeyButton(
+                text = "=",
+                onClick = { onKeyPress("=") },
+                backgroundColor = keyBackgroundColor,
+                textColor = keyTextColor,
                 modifier = Modifier.weight(1f),
-                onPress = { onKeyPressDown?.invoke("emoji") }
+                onPress = { onKeyPressDown?.invoke("=") }
             )
         }
 

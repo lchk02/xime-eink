@@ -93,15 +93,15 @@ object KeyboardThemes {
             id = "eink",
             name = "简约水墨",
             specialKeyLight = Color(0xFFF0F0F0),
-            specialKeyDark = Color(0xFFF0F0F0),
+            specialKeyDark = Color(0xFF333333),
             accentLight = Color(0xFF000000),
-            accentDark = Color(0xFF000000),
+            accentDark = Color(0xFFE0E0E0),
             primaryLight = Color(0xFF000000),
-            primaryDark = Color(0xFF000000),
+            primaryDark = Color(0xFFE8E8E8),
             primaryContainerLight = Color(0xFFF5F5F5),
-            primaryContainerDark = Color(0xFFF5F5F5),
+            primaryContainerDark = Color(0xFF2D2D2D),
             surfaceLight = Color(0xFFFFFFFF),
-            surfaceDark = Color(0xFFFFFFFF)
+            surfaceDark = Color(0xFF1C1B1F)
         ),
         KeyboardColorScheme(
             id = "rose_pink",

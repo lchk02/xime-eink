@@ -22,7 +22,6 @@ import androidx.compose.material.icons.twotone.KeyboardAlt
 import androidx.compose.material.icons.twotone.Palette
 import androidx.compose.material.icons.twotone.Straighten
 import androidx.compose.material.icons.twotone.ToggleOn
-import androidx.compose.material.icons.twotone.Vibration
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -53,7 +52,6 @@ import com.kingzcheung.xime.ui.SettingsToggleItem
 fun SettingsMainContent(
     onNavigateToSchema: () -> Unit,
     onNavigateToTheme: () -> Unit,
-    onNavigateToKeyEffect: () -> Unit,
     onNavigateToDictionary: () -> Unit,
     onNavigateToAbout: () -> Unit,
     onNavigateToWebDav: () -> Unit = {}
@@ -193,18 +191,6 @@ fun SettingsMainContent(
                         title = "主题与定制",
                         subtitle = "自定义外观和样式",
                         onClick = onNavigateToTheme,
-                        showArrow = true
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(start = 56.dp),
-                        thickness = 0.5.dp,
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                    )
-                    SettingsItem(
-                        icon = Icons.TwoTone.Vibration,
-                        title = "按键效果",
-                        subtitle = "按键音效和振动反馈",
-                        onClick = onNavigateToKeyEffect,
                         showArrow = true
                     )
                     HorizontalDivider(

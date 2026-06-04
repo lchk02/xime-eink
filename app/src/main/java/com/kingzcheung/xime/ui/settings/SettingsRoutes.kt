@@ -4,7 +4,6 @@ object SettingsRoutes {
     const val Main = "main"
     const val Schema = "schema"
     const val Theme = "theme"
-    const val KeyEffect = "key_effect"
     const val Dictionary = "dictionary"
     const val About = "about"
     const val Privacy = "privacy"

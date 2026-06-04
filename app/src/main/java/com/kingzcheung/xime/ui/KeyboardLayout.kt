@@ -18,7 +18,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Backspace
 import androidx.compose.material.icons.filled.ArrowUpward
-import androidx.compose.material.icons.filled.EmojiEmotions
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -32,7 +31,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import com.kingzcheung.xime.ui.LocalStretchFactor
-import com.kingzcheung.xime.settings.SettingsPreferences
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -71,8 +69,6 @@ fun KeyboardLayout(
     onCursorMove: ((Int) -> Unit)? = null
 ) {
     val context = LocalContext.current
-    val swipeDownShowRootsEnabled = SettingsPreferences.isSwipeDownShowRootsEnabled(context)
-    val shouldShowRadicals = swipeDownShowRootsEnabled && KeysConfigHelper.hasSchemaRadicals(currentSchemaId)
     
     LaunchedEffect(Unit) {
         SubcharHelper.init(context)
@@ -134,8 +130,6 @@ fun KeyboardLayout(
                         keyboardBackgroundColor = keyboardBackgroundColor,
                         onSwipeStateChange = { state, bounds -> processSwipeState(state, bounds) },
                         onKeyPressDown = onKeyPressDown,
-                        swipeDownShowRootsEnabled = shouldShowRadicals,
-                        currentSchemaId = currentSchemaId
                     )
                 }
             }
@@ -162,8 +156,6 @@ fun KeyboardLayout(
                         modifier = Modifier.padding(horizontal = 16.dp),
                         onSwipeStateChange = { state, bounds -> processSwipeState(state, bounds) },
                         onKeyPressDown = onKeyPressDown,
-                        swipeDownShowRootsEnabled = shouldShowRadicals,
-                        currentSchemaId = currentSchemaId
                     )
                 }
             }
@@ -196,13 +188,13 @@ fun KeyboardLayout(
                             onPress = { onKeyPressDown?.invoke("shift") }
                         )
                     } else {
-                        IconKeyButton(
-                            icon = rememberVectorPainter(Icons.Default.EmojiEmotions),
-                            onClick = { onKeyPress("emoji") },
+                        KeyButton(
+                            text = "符",
+                            onClick = { onKeyPress("symbol") },
                             backgroundColor = specialKeyBackgroundColor,
-                            iconColor = keyTextColor,
+                            textColor = keyTextColor,
                             modifier = Modifier.weight(1.2f),
-                            onPress = { onKeyPressDown?.invoke("emoji") }
+                            onPress = { onKeyPressDown?.invoke("symbol") }
                         )
                     }
                     
@@ -218,8 +210,6 @@ fun KeyboardLayout(
                             val swipeUpText = KeysConfigHelper.getSwipeUpText(key)
                             val swipeDownText = if (isAsciiMode) {
                                 KeysConfigHelper.getSwipeDownEnglishText(key)
-                            } else if (shouldShowRadicals) {
-                                KeysConfigHelper.getSwipeDownWubiText(key, currentSchemaId)
                             } else null
                             
                             SwipeableKeyButton(
@@ -463,14 +453,6 @@ fun KeyboardLayout(
                 )
             }
         }
-        
-        SwipeBubble(
-            swipeState = swipeState,
-            keyBounds = lastKeyBounds,
-            isDarkTheme = isDarkTheme,
-            keyWidth = if (swipeState.isSwiping || swipeState.isPressed) lastKeyBounds.width else 0f,
-            keyboardWidth = keyboardBounds.width
-        )
     }
 }
 
@@ -555,8 +537,6 @@ fun KeyboardRowWithConfig(
     modifier: Modifier = Modifier,
     onSwipeStateChange: ((SwipeState, Rect) -> Unit)? = null,
     onKeyPressDown: ((String) -> Unit)? = null,
-    swipeDownShowRootsEnabled: Boolean = false,
-    currentSchemaId: String = "",
     fontSize: androidx.compose.ui.unit.TextUnit = androidx.compose.ui.unit.TextUnit.Unspecified,
     swipeFontSize: androidx.compose.ui.unit.TextUnit = 9.sp
 ) {
@@ -570,8 +550,6 @@ fun KeyboardRowWithConfig(
             val swipeUpText = KeysConfigHelper.getSwipeUpText(key)
             val swipeDownText = if (isAsciiMode) {
                 KeysConfigHelper.getSwipeDownEnglishText(key)
-            } else if (swipeDownShowRootsEnabled) {
-                KeysConfigHelper.getSwipeDownWubiText(key, currentSchemaId)
             } else null
             
             SwipeableKeyButton(

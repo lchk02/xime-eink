@@ -5,7 +5,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.kingzcheung.xime.ui.settings.DictionarySettingsContent
-import com.kingzcheung.xime.ui.settings.KeyEffectSettingsContent
 import com.kingzcheung.xime.ui.settings.SchemaSettingsContent
 import com.kingzcheung.xime.ui.settings.SettingsMainContent
 import com.kingzcheung.xime.ui.settings.SettingsRoutes
@@ -28,7 +27,6 @@ fun SettingsScreen(
             SettingsMainContent(
                 onNavigateToSchema = { navController.navigate(SettingsRoutes.Schema) },
                 onNavigateToTheme = { navController.navigate(SettingsRoutes.Theme) },
-                onNavigateToKeyEffect = { navController.navigate(SettingsRoutes.KeyEffect) },
                 onNavigateToDictionary = { navController.navigate(SettingsRoutes.Dictionary) },
                 onNavigateToAbout = { navController.navigate(SettingsRoutes.About) },
                 onNavigateToWebDav = { navController.navigate(SettingsRoutes.WebDav) }
@@ -43,11 +41,6 @@ fun SettingsScreen(
             ThemeSettingsContent(
                 onBack = { navController.popBackStack() },
                 onThemeChanged = onThemeChanged
-            )
-        }
-        composable(SettingsRoutes.KeyEffect) {
-            KeyEffectSettingsContent(
-                onBack = { navController.popBackStack() }
             )
         }
         composable(SettingsRoutes.Dictionary) {

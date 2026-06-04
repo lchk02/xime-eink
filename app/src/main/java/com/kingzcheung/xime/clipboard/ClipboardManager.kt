@@ -299,41 +299,4 @@ class ClipboardManager private constructor(private val context: Context) {
         val cutoff = now - seconds * 1000L
         return _clipboardItems.value.filter { it.timestamp >= cutoff }
     }
-
-    fun copyImageToSystemClipboard(imagePath: String, label: String = "emoji_image"): Boolean {
-        return try {
-            val imageFile = File(imagePath)
-            if (!imageFile.exists()) {
-                Log.e(TAG, "Image file not found: $imagePath")
-                return false
-            }
-
-            val cacheDir = File(context.cacheDir, "emoji_cache")
-            if (!cacheDir.exists()) {
-                cacheDir.mkdirs()
-            }
-
-            val cacheFile = File(cacheDir, imageFile.name)
-            FileInputStream(imageFile).use { input ->
-                cacheFile.outputStream().use { output ->
-                    input.copyTo(output)
-                }
-            }
-
-            val uri = FileProvider.getUriForFile(
-                context,
-                "${context.packageName}.fileprovider",
-                cacheFile
-            )
-
-            val clip = ClipData.newUri(context.contentResolver, label, uri)
-            androidClipboardManager.setPrimaryClip(clip)
-
-            Log.d(TAG, "Image copied to clipboard: $uri")
-            true
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to copy image to clipboard", e)
-            false
-        }
-    }
 }

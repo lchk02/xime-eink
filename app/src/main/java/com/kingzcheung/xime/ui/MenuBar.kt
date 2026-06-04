@@ -23,7 +23,6 @@ import androidx.compose.material.icons.automirrored.twotone.Assignment
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.filled.EmojiEmotions
 import androidx.compose.material.icons.filled.Keyboard
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.LightMode
@@ -35,7 +34,6 @@ import androidx.compose.material.icons.twotone.Bolt
 import androidx.compose.material.icons.twotone.BorderTop
 import androidx.compose.material.icons.twotone.DarkMode
 import androidx.compose.material.icons.twotone.ElectricBolt
-import androidx.compose.material.icons.twotone.EmojiEmotions
 import androidx.compose.material.icons.twotone.Keyboard
 import androidx.compose.material.icons.twotone.LightMode
 import androidx.compose.material.icons.twotone.Quickreply
@@ -73,7 +71,6 @@ fun MenuBar(
     onClipboard: () -> Unit,
     onQuickSend: () -> Unit,
     onKeyboardResize: () -> Unit,
-    onEmoji: () -> Unit,
     onReloadConfig: () -> Unit,
     onSettings: () -> Unit,
     onSchemaList: () -> Unit,
@@ -93,7 +90,7 @@ fun MenuBar(
         MenuItem(rememberVectorPainter(Icons.AutoMirrored.TwoTone.Assignment), "剪贴板", onClipboard),
         MenuItem(rememberVectorPainter(Icons.TwoTone.Quickreply), "快捷发送", onQuickSend),
         MenuItem(rememberVectorPainter(Icons.TwoTone.SettingsOverscan), "键盘调节", onKeyboardResize),
-        MenuItem(rememberVectorPainter(Icons.TwoTone.EmojiEmotions), "表情", onEmoji),
+        MenuItem(rememberVectorPainter(Icons.TwoTone.Settings), "设置", onSettings),
         MenuItem(rememberVectorPainter(when (darkMode) {
                 0 -> Icons.TwoTone.DarkMode
                 1 -> Icons.TwoTone.LightMode
@@ -105,8 +102,7 @@ fun MenuBar(
             }, onToggleDarkMode),
         MenuItem(rememberVectorPainter(Icons.TwoTone.Rotate90DegreesCcw), "部署方案", onReloadConfig),
         MenuItem(rememberVectorPainter(Icons.TwoTone.BorderTop), "定制工具栏", onToolbarCustomize),
-        MenuItem(rememberVectorPainter(Icons.TwoTone.Keyboard), "输入方案", onSchemaList),
-        MenuItem(rememberVectorPainter(Icons.TwoTone.Settings), "设置", onSettings)
+        MenuItem(rememberVectorPainter(Icons.TwoTone.Keyboard), "输入方案", onSchemaList)
     )
     Column(
         modifier = modifier

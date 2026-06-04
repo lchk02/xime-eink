@@ -74,22 +74,29 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
+        writeStartupLog("MainActivity.onCreate START")
+        
         prewarmRimeEngine()
 
         handleSharedIntent(intent)
         
         val requestPermission = intent?.getStringExtra("request_permission")
+        writeStartupLog("request_permission extra: $requestPermission")
         if (requestPermission == PermissionHelper.PERMISSION_RECORD_AUDIO) {
+            writeStartupLog("PERMISSION_RECORD_AUDIO path, hasPermission=${PermissionHelper.hasRecordAudioPermission(this)}")
             if (!PermissionHelper.hasRecordAudioPermission(this)) {
                 permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                writeStartupLog("Launched permission request")
             } else {
                 Toast.makeText(this, "麦克风权限已授权", Toast.LENGTH_SHORT).show()
+                writeStartupLog("Permission already granted, finishing activity")
                 finish()
             }
             return
         }
         
         enableEdgeToEdge()
+        writeStartupLog("enableEdgeToEdge done")
         val openFragment = intent?.getStringExtra("open_fragment")
         setContent {
             val context = this
@@ -166,6 +173,15 @@ class MainActivity : ComponentActivity() {
                     Toast.LENGTH_LONG
                 ).show()
             }
+        }
+    }
+
+    private fun writeStartupLog(msg: String) {
+        try {
+            val logFile = java.io.File(filesDir, "startup.log")
+            val timestamp = java.text.SimpleDateFormat("MM-dd HH:mm:ss.SSS", java.util.Locale.US).format(java.util.Date())
+            logFile.appendText("[$timestamp] $msg\n")
+        } catch (_: Exception) {
         }
     }
 }

@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Backspace
-import androidx.compose.material.icons.filled.EmojiEmotions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -136,13 +135,13 @@ fun SplitKeyboardLayout(
                         .weight(1f),
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    IconKeyButton(
-                        icon = rememberVectorPainter(Icons.Default.EmojiEmotions),
-                        onClick = { onKeyPress("emoji") },
+                    KeyButton(
+                        text = "符",
+                        onClick = { onKeyPress("symbol") },
                         backgroundColor = specialKeyBackgroundColor,
-                        iconColor = keyTextColor,
+                        textColor = keyTextColor,
                         modifier = Modifier.weight(1.2f),
-                        onPress = { onKeyPressDown?.invoke("emoji") }
+                        onPress = { onKeyPressDown?.invoke("symbol") }
                     )
                     SplitSpaceKey(
                         onClick = { onKeyPress("space") },

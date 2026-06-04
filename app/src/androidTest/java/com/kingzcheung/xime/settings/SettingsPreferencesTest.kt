@@ -52,42 +52,6 @@ class SettingsPreferencesTest {
     }
 
     @Test
-    fun `sound and vibration defaults and updates work`() {
-        assertTrue(SettingsPreferences.isSoundEnabled(context))
-        assertEquals(50, SettingsPreferences.getSoundVolume(context))
-        assertTrue(SettingsPreferences.isVibrationEnabled(context))
-        assertEquals(50, SettingsPreferences.getVibrationIntensity(context))
-
-        SettingsPreferences.setSoundEnabled(context, false)
-        SettingsPreferences.setSoundVolume(context, 72)
-        SettingsPreferences.setVibrationEnabled(context, false)
-        SettingsPreferences.setVibrationIntensity(context, 66)
-
-        assertFalse(SettingsPreferences.isSoundEnabled(context))
-        assertEquals(72, SettingsPreferences.getSoundVolume(context))
-        assertFalse(SettingsPreferences.isVibrationEnabled(context))
-        assertEquals(66, SettingsPreferences.getVibrationIntensity(context))
-    }
-
-    @Test
-    fun `sound volume boundary values`() {
-        SettingsPreferences.setSoundVolume(context, 0)
-        assertEquals(0, SettingsPreferences.getSoundVolume(context))
-        
-        SettingsPreferences.setSoundVolume(context, 100)
-        assertEquals(100, SettingsPreferences.getSoundVolume(context))
-    }
-
-    @Test
-    fun `vibration intensity boundary values`() {
-        SettingsPreferences.setVibrationIntensity(context, 0)
-        assertEquals(0, SettingsPreferences.getVibrationIntensity(context))
-        
-        SettingsPreferences.setVibrationIntensity(context, 100)
-        assertEquals(100, SettingsPreferences.getVibrationIntensity(context))
-    }
-
-    @Test
     fun `keyboard theme and bottom buttons persist`() {
         assertEquals("lavender_purple", SettingsPreferences.getKeyboardTheme(context))
         assertFalse(SettingsPreferences.showBottomButtons(context))
@@ -229,7 +193,6 @@ class SettingsPreferencesTest {
     fun `clearing preferences resets to defaults`() {
         SettingsPreferences.setCurrentSchema(context, "custom_schema")
         SettingsPreferences.setDarkMode(context, 2)
-        SettingsPreferences.setSoundEnabled(context, false)
         
         context.getSharedPreferences("kime_settings", Context.MODE_PRIVATE)
             .edit()
@@ -238,6 +201,5 @@ class SettingsPreferencesTest {
         
         assertEquals("wubi86", SettingsPreferences.getCurrentSchema(context))
         assertEquals(0, SettingsPreferences.getDarkMode(context))
-        assertTrue(SettingsPreferences.isSoundEnabled(context))
     }
 }

@@ -13,10 +13,17 @@ class RimeEngine {
         private const val TAG = "RimeEngine"
         private var instance: RimeEngine? = null
         private var deploymentCallback: ((Boolean, String) -> Unit)? = null
+        private var nativeLibraryLoaded = false
 
         init {
-            System.loadLibrary("rime_jni")
-            Log.d(TAG, "Native library loaded")
+            try {
+                System.loadLibrary("rime_jni")
+                nativeLibraryLoaded = true
+                Log.d(TAG, "Native library loaded")
+            } catch (e: UnsatisfiedLinkError) {
+                Log.e(TAG, "FATAL: Failed to load rime_jni native library", e)
+                nativeLibraryLoaded = false
+            }
         }
 
         fun getInstance(): RimeEngine {
@@ -25,7 +32,9 @@ class RimeEngine {
             }
         }
 
-        fun isInitialized(): Boolean = instance?.isInitialized ?: false
+        fun isInitialized(): Boolean = nativeLibraryLoaded && instance?.isInitialized == true
+
+        fun isNativeLibraryLoaded(): Boolean = nativeLibraryLoaded
 
         fun setDeploymentCallback(callback: (isDeploying: Boolean, message: String) -> Unit) {
             deploymentCallback = callback

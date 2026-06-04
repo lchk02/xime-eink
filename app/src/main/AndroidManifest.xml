@@ -80,11 +80,13 @@
                 android:resource="@xml/filepaths" />
         </provider>
         
-        <!-- 插件 ContentProvider 代理 -->
+        <!-- 插件 ContentProvider 代理 (待实现) -->
+        <!--
         <provider
             android:name=".provider.HostProvider"
             android:authorities="com.kingzcheung.xime.plugin.proxy"
             android:exported="true" />
+        -->
         
     </application>
 
