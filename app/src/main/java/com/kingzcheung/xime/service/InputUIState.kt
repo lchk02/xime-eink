@@ -15,7 +15,7 @@ data class InputUIState(
     val schemas: List<SchemaInfo> = emptyList(),
     val enterKeyText: String = "发送",
     val darkMode: Int = 0,
-    val themeId: String = "ocean_blue",
+    val themeId: String = "eink",
     val showBottomButtons: Boolean = false,
     val keyboardHeightDp: Int = SettingsPreferences.DEFAULT_KEYBOARD_HEIGHT_DP,
     val keyboardBottomPaddingDp: Int = 0,

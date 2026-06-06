@@ -73,7 +73,7 @@ fun KeyboardView(
     enterKeyText: String = "发送",
     isDarkTheme: Boolean = false,
     darkMode: Int = 2,
-    themeId: String = "ocean_blue",
+    themeId: String = "eink",
     showBottomButtons: Boolean = false,
     clipboardItems: List<ClipboardItem> = emptyList(),
     quickSendItems: List<ClipboardItem> = emptyList(),

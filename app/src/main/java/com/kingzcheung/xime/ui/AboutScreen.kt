@@ -193,7 +193,7 @@ fun AboutContent(
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "五笔输入法",
+                            text = "墨水屏版",
                             fontSize = 16.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

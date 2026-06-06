@@ -53,7 +53,7 @@ class SettingsPreferencesTest {
 
     @Test
     fun `keyboard theme and bottom buttons persist`() {
-        assertEquals("lavender_purple", SettingsPreferences.getKeyboardTheme(context))
+        assertEquals("eink", SettingsPreferences.getKeyboardTheme(context))
         assertFalse(SettingsPreferences.showBottomButtons(context))
 
         SettingsPreferences.setKeyboardTheme(context, "sunset")
@@ -65,11 +65,11 @@ class SettingsPreferencesTest {
 
     @Test
     fun `multiple theme changes`() {
-        SettingsPreferences.setKeyboardTheme(context, "ocean_blue")
-        assertEquals("ocean_blue", SettingsPreferences.getKeyboardTheme(context))
+        SettingsPreferences.setKeyboardTheme(context, "eink")
+        assertEquals("eink", SettingsPreferences.getKeyboardTheme(context))
         
-        SettingsPreferences.setKeyboardTheme(context, "lavender_purple")
-        assertEquals("lavender_purple", SettingsPreferences.getKeyboardTheme(context))
+        SettingsPreferences.setKeyboardTheme(context, "sunset")
+        assertEquals("sunset", SettingsPreferences.getKeyboardTheme(context))
         
         SettingsPreferences.setKeyboardTheme(context, "sunset")
         assertEquals("sunset", SettingsPreferences.getKeyboardTheme(context))
