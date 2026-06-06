@@ -1,6 +1,7 @@
 package com.kingzcheung.xime.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -72,8 +73,9 @@ fun SchemaListView(
             Box(
                 modifier = Modifier
                     .size(28.dp)
+                    .border(1.dp, LocalKeyBorderColor.current, CircleShape)
                     .clip(CircleShape)
-                    .background(if (isDarkTheme) Color(0xFF374151) else Color(0xFFF3F4F6))
+                    .background(LocalKeyBackgroundColor.current)
                     .clickable { onBack?.invoke() },
                 contentAlignment = Alignment.Center
             ) {

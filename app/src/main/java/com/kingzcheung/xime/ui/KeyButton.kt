@@ -1,6 +1,7 @@
 package com.kingzcheung.xime.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -93,10 +94,11 @@ fun KeyButton(
         modifier = modifier
             .fillMaxHeight()
             .shadow(1.dp, RoundedCornerShape(8.dp), ambientColor = Color(0x80000000), spotColor = Color(0x80000000))
+            .border(1.dp, LocalKeyBorderColor.current, RoundedCornerShape(8.dp))
             .clip(RoundedCornerShape(8.dp))
             .background(
-                if (isPressed) darkenColor(backgroundColor, 0.2f)
-                else if (isHighlighted) backgroundColor.copy(alpha = 0.8f)
+                if (isPressed) backgroundColor.copy(alpha = 0.7f)
+                else if (isHighlighted) backgroundColor.copy(alpha = 0.85f)
                 else backgroundColor
             )
             .pointerInput(Unit) {
@@ -187,10 +189,10 @@ fun KeyButton(
             maxLines = 1
         )
         
-        if (!swipeText.isNullOrEmpty()) {
+        if (!swipeText.isNullOrEmpty() && !LocalHideSwipeSymbols.current) {
             Text(
                 text = swipeText,
-                color = textColor.copy(alpha = 0.5f),
+                color = textColor,
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Normal,
                 textAlign = TextAlign.Center,
@@ -247,10 +249,11 @@ fun SwipeableKeyButton(
             .onGloballyPositioned { coordinates ->
                 buttonBounds = coordinates.boundsInRoot()
             }
+            .border(1.dp, LocalKeyBorderColor.current, RoundedCornerShape(8.dp))
             .clip(RoundedCornerShape(8.dp))
             .background(
                 if (isPressed) backgroundColor.copy(alpha = 0.7f)
-                else if (isHighlighted) backgroundColor.copy(alpha = 0.8f)
+                else if (isHighlighted) backgroundColor.copy(alpha = 0.85f)
                 else backgroundColor
             )
             .pointerInput(Unit) {
@@ -347,10 +350,10 @@ fun SwipeableKeyButton(
             maxLines = 1
         )
         
-        if (swipeText != null && swipeText.isNotEmpty()) {
+        if (swipeText != null && swipeText.isNotEmpty() && !LocalHideSwipeSymbols.current) {
             Text(
                 text = swipeText,
-                color = textColor.copy(alpha = 0.5f),
+                color = textColor,
                 fontSize = swipeFontSize,
                 fontWeight = FontWeight.Normal,
                 textAlign = TextAlign.Center,
@@ -427,10 +430,11 @@ fun IconKeyButton(
         modifier = modifier
             .fillMaxHeight()
             .shadow(1.dp, RoundedCornerShape(8.dp), ambientColor = Color(0x80000000), spotColor = Color(0x80000000))
+            .border(1.dp, LocalKeyBorderColor.current, RoundedCornerShape(8.dp))
             .clip(RoundedCornerShape(8.dp))
             .background(
-                if (isPressed) darkenColor(backgroundColor, 0.05f)
-                else if (isHighlighted) backgroundColor.copy(alpha = 0.8f)
+                if (isPressed) backgroundColor.copy(alpha = 0.7f)
+                else if (isHighlighted) backgroundColor.copy(alpha = 0.85f)
                 else backgroundColor
             )
             .pointerInput(Unit) {
@@ -530,10 +534,11 @@ fun SwipeableIconKeyButton(
             .onGloballyPositioned { coordinates ->
                 buttonBounds = coordinates.boundsInRoot()
             }
+            .border(1.dp, LocalKeyBorderColor.current, RoundedCornerShape(8.dp))
             .clip(RoundedCornerShape(8.dp))
             .background(
-                if (isPressed) darkenColor(backgroundColor, 0.2f)
-                else if (isHighlighted) backgroundColor.copy(alpha = 0.8f)
+                if (isPressed) backgroundColor.copy(alpha = 0.7f)
+                else if (isHighlighted) backgroundColor.copy(alpha = 0.85f)
                 else backgroundColor
             )
             .pointerInput(Unit) {
@@ -690,10 +695,10 @@ fun SwipeableIconKeyButton(
             modifier = Modifier.size(iconSize)
         )
         
-        if (!swipeText.isNullOrEmpty()) {
+        if (!swipeText.isNullOrEmpty() && !LocalHideSwipeSymbols.current) {
             Text(
                 text = swipeText,
-                color = iconColor.copy(alpha = 0.5f),
+                color = iconColor,
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Normal,
                 textAlign = TextAlign.Center,

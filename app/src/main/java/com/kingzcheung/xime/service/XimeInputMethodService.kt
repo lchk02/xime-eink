@@ -12,19 +12,25 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
 import android.widget.FrameLayout
 import android.widget.Toast
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
-import com.kingzcheung.xime.ui.LocalStretchFactor
 import androidx.compose.ui.unit.dp
 import com.kingzcheung.xime.ui.KeyboardResizeOverlay
+import com.kingzcheung.xime.ui.LocalHideSwipeSymbols
+import com.kingzcheung.xime.ui.LocalKeyBackgroundColor
+import com.kingzcheung.xime.ui.LocalKeyBorderColor
+import com.kingzcheung.xime.ui.LocalStretchFactor
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -97,6 +103,7 @@ class XimeInputMethodService : InputMethodService(), LifecycleOwner, SavedStateR
             themeId = SettingsPreferences.getKeyboardTheme(this),
             showBottomButtons = SettingsPreferences.showBottomButtons(this),
             hideBottomSpace = SettingsPreferences.isHideBottomSpace(this),
+            hideSwipeSymbols = SettingsPreferences.isHideSwipeSymbols(this),
             keyboardHeightDp = SettingsPreferences.getKeyboardHeightDp(this, isLandscape),
             keyboardBottomPaddingDp = SettingsPreferences.getKeyboardBottomPaddingDp(this),
             toolbarButtons = SettingsPreferences.getToolbarButtons(this)
@@ -107,7 +114,7 @@ class XimeInputMethodService : InputMethodService(), LifecycleOwner, SavedStateR
         val prefs = SettingsPreferences.getPrefsPublic(this)
         sharedPrefsListener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
             when (key) {
-                "dark_mode", "keyboard_theme", "show_bottom_buttons", "hide_bottom_space", "keyboard_height_dp", "keyboard_bottom_padding_dp" -> {
+                "dark_mode", "keyboard_theme", "show_bottom_buttons", "hide_bottom_space", "hide_swipe_symbols", "keyboard_height_dp", "keyboard_bottom_padding_dp" -> {
                     loadDarkModePreference()
                     Log.d(TAG, "Settings changed: $key, updated UI state")
                 }
@@ -380,11 +387,17 @@ class XimeInputMethodService : InputMethodService(), LifecycleOwner, SavedStateR
                             modifier = Modifier
                                 .align(androidx.compose.ui.Alignment.BottomCenter)
                                 .fillMaxWidth()
+                                .border(1.dp, if (isDarkTheme) Color.White else Color.Black, RoundedCornerShape(0.dp))
                                 .padding(bottom = 0.dp)
                                 .height(if (state.showKeyboardResize) (state.resizePreviewHeightDp + state.resizePreviewBottomPaddingDp).dp else (keyboardHeight + state.keyboardBottomPaddingDp - bottomSpaceSaving).dp),
                             color = MaterialTheme.colorScheme.surface
                         ) {
-                        CompositionLocalProvider(LocalStretchFactor provides state.stretchFactor) {
+                        CompositionLocalProvider(
+                            LocalStretchFactor provides state.stretchFactor,
+                            LocalKeyBorderColor provides if (isDarkTheme) Color.White else Color.Black,
+                            LocalKeyBackgroundColor provides if (isDarkTheme) Color.Black else Color.White,
+                            LocalHideSwipeSymbols provides state.hideSwipeSymbols
+                        ) {
                             KeyboardView(
                                 candidates = state.candidates,
                                 inputText = state.inputText,

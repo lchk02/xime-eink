@@ -1,6 +1,7 @@
 package com.kingzcheung.xime.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -76,10 +77,11 @@ fun CandidatePage(
                 Box(
                     modifier = Modifier
                         .size(28.dp)
+                        .border(1.dp, LocalKeyBorderColor.current, CircleShape)
                         .clip(CircleShape)
                         .background(
-                            if (hasPrevPage && onPageUp != null) textColor.copy(alpha = 0.5f)
-                            else textColor.copy(alpha = 0.1f)
+                            if (hasPrevPage && onPageUp != null) LocalKeyBackgroundColor.current.copy(alpha = 0.7f)
+                            else LocalKeyBackgroundColor.current
                         )
                         .clickable(
                             enabled = hasPrevPage && onPageUp != null,
@@ -98,10 +100,11 @@ fun CandidatePage(
                 Box(
                     modifier = Modifier
                         .size(28.dp)
+                        .border(1.dp, LocalKeyBorderColor.current, CircleShape)
                         .clip(CircleShape)
                         .background(
-                            if (hasNextPage && onPageDown != null) textColor.copy(alpha = 0.5f)
-                            else textColor.copy(alpha = 0.1f)
+                            if (hasNextPage && onPageDown != null) LocalKeyBackgroundColor.current.copy(alpha = 0.7f)
+                            else LocalKeyBackgroundColor.current
                         )
                         .clickable(
                             enabled = hasNextPage && onPageDown != null,
@@ -121,8 +124,9 @@ fun CandidatePage(
             Box(
                 modifier = Modifier
                     .size(28.dp)
+                    .border(1.dp, LocalKeyBorderColor.current, CircleShape)
                     .clip(CircleShape)
-                    .background(if (isDarkTheme) Color(0xFF374151) else Color(0xFFF3F4F6))
+                    .background(LocalKeyBackgroundColor.current)
                     .clickable { onBack?.invoke() },
                 contentAlignment = Alignment.Center
             ) {

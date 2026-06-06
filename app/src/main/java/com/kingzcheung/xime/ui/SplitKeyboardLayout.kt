@@ -1,6 +1,7 @@
 package com.kingzcheung.xime.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -322,8 +323,9 @@ fun CompactSwipeableKeyButton(
         modifier = modifier
             .fillMaxHeight()
             .shadow(1.dp, RoundedCornerShape(8.dp), ambientColor = Color(0x80000000), spotColor = Color(0x80000000))
+            .border(1.dp, LocalKeyBorderColor.current, RoundedCornerShape(8.dp))
             .clip(RoundedCornerShape(8.dp))
-            .background(if (isPressed) darkenColor(backgroundColor) else backgroundColor)
+            .background(if (isPressed) backgroundColor.copy(alpha = 0.7f) else backgroundColor)
             .pointerInput(onClick) {
                 detectTapGestures(
                     onPress = {
@@ -421,6 +423,7 @@ private fun SplitSpaceKey(
         modifier = modifier
             .fillMaxHeight()
             .shadow(1.dp, RoundedCornerShape(8.dp), ambientColor = Color(0x80000000), spotColor = Color(0x80000000))
+            .border(1.dp, LocalKeyBorderColor.current, RoundedCornerShape(8.dp))
             .clip(RoundedCornerShape(8.dp))
             .background(backgroundColor)
             .clickable(

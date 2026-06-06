@@ -87,8 +87,9 @@ fun ToolbarCustomizeView(
             Box(
                 modifier = Modifier
                     .size(28.dp)
+                    .border(1.dp, LocalKeyBorderColor.current, CircleShape)
                     .clip(CircleShape)
-                    .background(if (isDarkTheme) Color(0xFF374151) else Color(0xFFF3F4F6))
+                    .background(LocalKeyBackgroundColor.current)
                     .clickable { onDismiss() },
                 contentAlignment = Alignment.Center
             ) {
@@ -172,14 +173,10 @@ fun ToolbarCustomizeView(
                                         .padding(12.dp)
                                         .aspectRatio(1f)
                                         .clip(CircleShape)
-                                        .background(
-                                            if (isEnabled) accentColor.copy(0.5f)
-                                            else Color.Transparent
-                                        )
+                                        .background(LocalKeyBackgroundColor.current)
                                         .border(
                                             width = 1.dp,
-                                            color = if (isEnabled) Color.Transparent
-                                            else keyTextColor.copy(alpha = 0.15f),
+                                            color = LocalKeyBorderColor.current,
                                             shape = CircleShape
                                         )
                                         .clickable { toggleButton(button) },

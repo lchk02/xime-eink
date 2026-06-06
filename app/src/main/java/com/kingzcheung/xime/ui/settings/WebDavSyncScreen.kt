@@ -215,6 +215,7 @@ fun WebDavSyncContent(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                     val testEnabled = serverUrl.isNotBlank() && !isTesting
+                    val tintColor = MaterialTheme.colorScheme.onSurface
                         Button(
                             onClick = {
                                 saveConfig()
@@ -234,11 +235,11 @@ fun WebDavSyncContent(
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Color.Transparent,
-                                contentColor = Color.Black,
+                                contentColor = tintColor,
                                 disabledContainerColor = Color.Transparent,
                                 disabledContentColor = Color(0xFF999999)
                             ),
-                            border = BorderStroke(1.dp, if (testEnabled) Color.Black else Color(0xFF999999))
+                            border = BorderStroke(1.dp, if (testEnabled) tintColor else Color(0xFF999999))
                         ) {
                             if (isTesting) {
                                 CircularProgressIndicator(
@@ -304,6 +305,7 @@ fun WebDavSyncContent(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 val uploadEnabled = serverUrl.isNotBlank() && !isUploading && !isDownloading
+                val tintColor = MaterialTheme.colorScheme.onSurface
                 Button(
                     onClick = {
                         saveConfig()
@@ -325,11 +327,11 @@ fun WebDavSyncContent(
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Transparent,
-                        contentColor = Color.Black,
+                        contentColor = tintColor,
                         disabledContainerColor = Color.Transparent,
                         disabledContentColor = Color(0xFF999999)
                     ),
-                    border = BorderStroke(1.dp, if (uploadEnabled) Color.Black else Color(0xFF999999))
+                    border = BorderStroke(1.dp, if (uploadEnabled) tintColor else Color(0xFF999999))
                 ) {
                     if (isUploading) {
                         CircularProgressIndicator(
@@ -368,11 +370,11 @@ fun WebDavSyncContent(
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Transparent,
-                        contentColor = Color.Black,
+                        contentColor = tintColor,
                         disabledContainerColor = Color.Transparent,
                         disabledContentColor = Color(0xFF999999)
                     ),
-                    border = BorderStroke(1.dp, if (downloadEnabled) Color.Black else Color(0xFF999999))
+                    border = BorderStroke(1.dp, if (downloadEnabled) tintColor else Color(0xFF999999))
                 ) {
                     if (isDownloading) {
                         CircularProgressIndicator(

@@ -59,6 +59,9 @@ import com.kingzcheung.xime.ui.theme.KeyboardThemes
 import com.kingzcheung.xime.ui.SplitWordsView
 
 val LocalStretchFactor = compositionLocalOf { 1f }
+val LocalKeyBorderColor = compositionLocalOf { Color.Black }
+val LocalKeyBackgroundColor = compositionLocalOf { Color.White }
+val LocalHideSwipeSymbols = compositionLocalOf { false }
 
 @Composable
 fun KeyboardView(
@@ -182,6 +185,13 @@ fun KeyboardView(
                     }
                     ToolbarAction(button, onClick)
                 }
+            )
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(dividerColor)
             )
 
             val cursorMod = if (!isComposing && inputText.isEmpty() && onCursorMove != null)

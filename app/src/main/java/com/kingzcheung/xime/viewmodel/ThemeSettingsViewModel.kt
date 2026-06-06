@@ -15,7 +15,8 @@ data class ThemeUiState(
     val colorTheme: String = "eink",
     val colorThemes: List<KeyboardColorScheme> = KeyboardThemes.themes,
     val showBottomButtons: Boolean = false,
-    val hideBottomSpace: Boolean = false
+    val hideBottomSpace: Boolean = false,
+    val hideSwipeSymbols: Boolean = false
 )
 
 class ThemeSettingsViewModel(application: Application) : AndroidViewModel(application) {
@@ -25,7 +26,8 @@ class ThemeSettingsViewModel(application: Application) : AndroidViewModel(applic
         darkMode = SettingsPreferences.getDarkMode(context),
         colorTheme = SettingsPreferences.getKeyboardTheme(context),
         showBottomButtons = SettingsPreferences.showBottomButtons(context),
-        hideBottomSpace = SettingsPreferences.isHideBottomSpace(context)
+        hideBottomSpace = SettingsPreferences.isHideBottomSpace(context),
+        hideSwipeSymbols = SettingsPreferences.isHideSwipeSymbols(context)
     ))
     val uiState: StateFlow<ThemeUiState> = _uiState.asStateFlow()
     
@@ -46,6 +48,9 @@ class ThemeSettingsViewModel(application: Application) : AndroidViewModel(applic
     
     fun setHideBottomSpace(hide: Boolean) {
         SettingsPreferences.setHideBottomSpace(context, hide)
+        if (hide) {
+            SettingsPreferences.setShowBottomButtons(context, false)
+        }
         _uiState.update {
             if (hide) {
                 it.copy(hideBottomSpace = true, showBottomButtons = false)
@@ -53,5 +58,10 @@ class ThemeSettingsViewModel(application: Application) : AndroidViewModel(applic
                 it.copy(hideBottomSpace = false)
             }
         }
+    }
+    
+    fun setHideSwipeSymbols(hide: Boolean) {
+        SettingsPreferences.setHideSwipeSymbols(context, hide)
+        _uiState.update { it.copy(hideSwipeSymbols = hide) }
     }
 }

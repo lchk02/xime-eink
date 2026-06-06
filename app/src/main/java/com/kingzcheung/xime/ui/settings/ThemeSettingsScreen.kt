@@ -32,7 +32,7 @@ import com.kingzcheung.xime.ui.ThemeCard
 import com.kingzcheung.xime.viewmodel.ThemeSettingsViewModel
 import androidx.compose.material.icons.twotone.Straighten
 import androidx.compose.material.icons.twotone.SwapVert
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material.icons.twotone.ArrowUpward
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -173,12 +173,12 @@ fun ThemeSettingsContent(
             }
             
             item {
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "键盘底部",
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier.padding(bottom = 4.dp)
                 )
             }
 
@@ -194,20 +194,22 @@ fun ThemeSettingsContent(
             }
 
             item {
-                HorizontalDivider(
-                    modifier = Modifier.padding(start = 56.dp),
-                    thickness = 0.5.dp,
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                )
-            }
-
-            item {
                 SettingsToggleItem(
                     icon = Icons.TwoTone.SwapVert,
                     title = "隐藏底部空白",
                     subtitle = "缩小键盘底部预留空间，底部按键更贴近屏幕边缘",
                     checked = uiState.hideBottomSpace,
                     onCheckedChange = { viewModel.setHideBottomSpace(it) }
+                )
+            }
+
+            item {
+                SettingsToggleItem(
+                    icon = Icons.TwoTone.ArrowUpward,
+                    title = "隐藏上划符号",
+                    subtitle = "隐藏按键上方的小字上划提示，上划功能不受影响",
+                    checked = uiState.hideSwipeSymbols,
+                    onCheckedChange = { viewModel.setHideSwipeSymbols(it) }
                 )
             }
             

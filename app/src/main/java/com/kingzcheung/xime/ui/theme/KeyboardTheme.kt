@@ -22,16 +22,16 @@ object KeyboardThemes {
         KeyboardColorScheme(
             id = "eink",
             name = "简约水墨",
-            specialKeyLight = Color(0xFFF0F0F0),
-            specialKeyDark = Color(0xFF333333),
+            specialKeyLight = Color(0xFFFFFFFF),
+            specialKeyDark = Color(0xFF000000),
             accentLight = Color(0xFF000000),
-            accentDark = Color(0xFFE0E0E0),
+            accentDark = Color(0xFFFFFFFF),
             primaryLight = Color(0xFF000000),
-            primaryDark = Color(0xFFE8E8E8),
+            primaryDark = Color(0xFFFFFFFF),
             primaryContainerLight = Color(0xFFF5F5F5),
             primaryContainerDark = Color(0xFF2D2D2D),
             surfaceLight = Color(0xFFFFFFFF),
-            surfaceDark = Color(0xFF1C1B1F)
+            surfaceDark = Color(0xFF000000)
         )
     )
     

@@ -3,6 +3,7 @@ package com.kingzcheung.xime.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -179,10 +180,11 @@ fun SettingsToggleItem(
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+        val checkedColor = MaterialTheme.colorScheme.onSurface
         val switchColors = SwitchDefaults.colors(
-            checkedThumbColor = Color.Black,
+            checkedThumbColor = checkedColor,
             checkedTrackColor = Color.Transparent,
-            checkedBorderColor = Color.Black,
+            checkedBorderColor = checkedColor,
             uncheckedThumbColor = Color(0xFF888888),
             uncheckedTrackColor = Color.Transparent,
             uncheckedBorderColor = Color(0xFF999999)

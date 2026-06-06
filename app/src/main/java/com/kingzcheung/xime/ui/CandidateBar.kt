@@ -2,6 +2,7 @@ package com.kingzcheung.xime.ui
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -151,8 +152,9 @@ fun CandidateBar(
                         Box(
                             modifier = Modifier
                                 .size(32.dp)
+                                .border(1.dp, LocalKeyBorderColor.current, RoundedCornerShape(16.dp))
                                 .clip(RoundedCornerShape(16.dp))
-                                .background(if (isDarkTheme) Color(0xFF374151) else Color(0xFFF3F4F6))
+                                .background(LocalKeyBackgroundColor.current)
                                 .clickable { onBack() },
                             contentAlignment = Alignment.Center
                         ) {
@@ -167,8 +169,9 @@ fun CandidateBar(
                         Box(
                             modifier = Modifier
                                 .size(32.dp)
+                                .border(1.dp, LocalKeyBorderColor.current, RoundedCornerShape(16.dp))
                                 .clip(RoundedCornerShape(16.dp))
-                                .background(if (isDarkTheme) Color(0xFF374151) else Color(0xFFF3F4F6))
+                                .background(LocalKeyBackgroundColor.current)
                                 .clickable { onLogoClick?.invoke() },
                             contentAlignment = Alignment.Center
                         ) {
@@ -226,12 +229,11 @@ fun CandidateBar(
                             modifier = Modifier
                                 .padding(horizontal = 5.dp)
                                 .size(32.dp)
+                                .border(1.dp, LocalKeyBorderColor.current, CircleShape)
                                 .clip(CircleShape)
                                 .background(
-                                    if (isPressed) (if (isDarkTheme) Color.White.copy(
-                                        alpha = 0.15f
-                                    ) else Color.Black.copy(alpha = 0.1f))
-                                    else (if (isDarkTheme) Color(0xFF374151) else Color(0xFFF3F4F6))
+                                    if (isPressed) LocalKeyBackgroundColor.current.copy(alpha = 0.7f)
+                                    else LocalKeyBackgroundColor.current
                                 )
                                 .clickable(
                                     interactionSource = interactionSource,
@@ -254,8 +256,9 @@ fun CandidateBar(
                     Box(
                         modifier = Modifier
                             .size(28.dp)
+                            .border(1.dp, LocalKeyBorderColor.current, RoundedCornerShape(14.dp))
                             .clip(RoundedCornerShape(14.dp))
-                            .background(if (isDarkTheme) Color(0xFF374151) else Color(0xFFF3F4F6))
+                            .background(LocalKeyBackgroundColor.current)
                             .clickable { onBack?.invoke() },
                         contentAlignment = Alignment.Center
                     ) {
@@ -284,11 +287,10 @@ fun CandidateBar(
                                 .width(30.dp)
                                 .height(24.dp)
                                 .clip(RoundedCornerShape(6.dp))
+                                .border(1.dp, LocalKeyBorderColor.current, RoundedCornerShape(6.dp))
                                 .background(
-                                    if (isMorePressed) (if (isDarkTheme) Color.White.copy(alpha = 0.15f) else Color.Black.copy(
-                                        alpha = 0.1f
-                                    ))
-                                    else Color.Transparent
+                                    if (isMorePressed) LocalKeyBackgroundColor.current.copy(alpha = 0.7f)
+                                    else LocalKeyBackgroundColor.current
                                 )
                                 .clickable(
                                     interactionSource = moreInteractionSource,
@@ -315,12 +317,11 @@ fun CandidateBar(
                         Box(
                             modifier = Modifier
                                 .size(32.dp)
+                                .border(1.dp, LocalKeyBorderColor.current, CircleShape)
                                 .clip(CircleShape)
                                 .background(
-                                    if (isHideKeyboardPressed) (if (isDarkTheme) Color.White.copy(
-                                        alpha = 0.15f
-                                    ) else Color.Black.copy(alpha = 0.1f))
-                                    else (if (isDarkTheme) Color(0xFF374151) else Color(0xFFF3F4F6))
+                                    if (isHideKeyboardPressed) LocalKeyBackgroundColor.current.copy(alpha = 0.7f)
+                                    else LocalKeyBackgroundColor.current
                                 )
                                 .clickable(
                                     interactionSource = hideKeyboardInteractionSource,
@@ -359,10 +360,7 @@ fun CandidateItem(
     Row(
         modifier = modifier
             .clip(RoundedCornerShape(5.dp))
-            .background(
-                if (isSelected) accentColor.copy(alpha = 0.2f)
-                else Color.Transparent
-            )
+            .background(Color.Transparent)
             .clickable(onClick = onClick)
             .padding(horizontal = 4.dp, vertical = 2.dp),
         verticalAlignment = Alignment.CenterVertically

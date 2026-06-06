@@ -2,6 +2,7 @@ package com.kingzcheung.xime.ui
 
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.drag
@@ -302,6 +303,7 @@ fun KeyboardLayout(
                             ambientColor = Color(0x80000000),
                             spotColor = Color(0x80000000)
                         )
+                        .border(1.dp, LocalKeyBorderColor.current, RoundedCornerShape(8.dp))
                         .clip(RoundedCornerShape(8.dp))
                         .background(keyBackgroundColor)
                         .pointerInput(Unit) {
@@ -386,18 +388,6 @@ fun KeyboardLayout(
                             fontWeight = androidx.compose.ui.text.font.FontWeight.Normal,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                             maxLines = 1
-                        )
-                        
-                        Text(
-                            text = "空格",
-                            color = keyTextColor.copy(alpha = 0.3f),
-                            fontSize = 10.sp,
-                            fontWeight = androidx.compose.ui.text.font.FontWeight.Normal,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Start,
-                            maxLines = 1,
-                            modifier = Modifier
-                                .align(Alignment.BottomStart)
-                                .padding(start = 6.dp, bottom = 2.dp)
                         )
                     }
                 }
@@ -520,8 +510,9 @@ private fun DummyKeyButton(
     Box(
         modifier = modifier
             .fillMaxHeight()
-            .clip(RoundedCornerShape(8.dp))
-            .background(backgroundColor)
+        .border(1.dp, LocalKeyBorderColor.current, RoundedCornerShape(8.dp))
+        .clip(RoundedCornerShape(8.dp))
+        .background(backgroundColor)
     )
 }
 

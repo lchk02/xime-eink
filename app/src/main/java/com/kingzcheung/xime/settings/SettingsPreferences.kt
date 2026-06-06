@@ -12,6 +12,7 @@ object SettingsPreferences {
     private const val KEY_KEYBOARD_THEME = "keyboard_theme"
     private const val KEY_SHOW_BOTTOM_BUTTONS = "show_bottom_buttons"
     private const val KEY_HIDE_BOTTOM_SPACE = "hide_bottom_space"
+    private const val KEY_HIDE_SWIPE_SYMBOLS = "hide_swipe_symbols"
     
     private const val KEY_SMART_PREDICTION_ENABLED = "smart_prediction_enabled"
     private const val KEY_PREDICTION_MODEL_REPO = "prediction_model_repo"
@@ -105,6 +106,14 @@ object SettingsPreferences {
     
     fun setHideBottomSpace(context: Context, hide: Boolean) {
         getPrefs(context).edit().putBoolean(KEY_HIDE_BOTTOM_SPACE, hide).apply()
+    }
+    
+    fun isHideSwipeSymbols(context: Context): Boolean {
+        return getPrefs(context).getBoolean(KEY_HIDE_SWIPE_SYMBOLS, false)
+    }
+    
+    fun setHideSwipeSymbols(context: Context, hide: Boolean) {
+        getPrefs(context).edit().putBoolean(KEY_HIDE_SWIPE_SYMBOLS, hide).apply()
     }
     
     fun isPluginEnabled(context: Context, pluginId: String): Boolean {

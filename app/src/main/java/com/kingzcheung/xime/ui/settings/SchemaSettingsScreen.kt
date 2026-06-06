@@ -5,7 +5,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.layout.Arrangement
@@ -303,7 +302,7 @@ fun SchemaSettingsContent(
                             expanded = showMenu,
                             onDismissRequest = { showMenu = false },
                             offset = DpOffset(0.dp, 4.dp),
-                            containerColor = if (isSystemInDarkTheme()) Color.Black else Color.White,
+                            containerColor = MaterialTheme.colorScheme.surface,
                             shape = RoundedCornerShape(12.dp)
                         ) {
                             DropdownMenuItem(
@@ -439,6 +438,7 @@ fun SchemaSettingsContent(
         }
 
         val deployEnabled = !uiState.isDeploying
+        val tintColor = MaterialTheme.colorScheme.onSurface
         Button(
             onClick = { viewModel.deploySchema() },
             modifier = Modifier
@@ -448,11 +448,11 @@ fun SchemaSettingsContent(
             enabled = deployEnabled,
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.Transparent,
-                contentColor = Color.Black,
+                contentColor = tintColor,
                 disabledContainerColor = Color.Transparent,
                 disabledContentColor = Color(0xFF999999)
             ),
-            border = BorderStroke(1.dp, if (deployEnabled) Color.Black else Color(0xFF999999))
+            border = BorderStroke(1.dp, if (deployEnabled) tintColor else Color(0xFF999999))
         ) {
             if (uiState.isDeploying) {
                 CircularProgressIndicator(
@@ -573,10 +573,11 @@ private fun SchemaToggleItem(
                 }
             }
 
+            val checkedColor = MaterialTheme.colorScheme.onSurface
             val switchColors = SwitchDefaults.colors(
-                checkedThumbColor = Color.Black,
+                checkedThumbColor = checkedColor,
                 checkedTrackColor = Color.Transparent,
-                checkedBorderColor = Color.Black,
+                checkedBorderColor = checkedColor,
                 uncheckedThumbColor = Color(0xFF888888),
                 uncheckedTrackColor = Color.Transparent,
                 uncheckedBorderColor = Color(0xFF999999)
