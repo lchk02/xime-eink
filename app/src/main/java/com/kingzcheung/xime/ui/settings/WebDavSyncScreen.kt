@@ -1,6 +1,7 @@
 package com.kingzcheung.xime.ui.settings
 
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -52,6 +53,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
@@ -213,6 +215,7 @@ fun WebDavSyncContent(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                    val testEnabled = serverUrl.isNotBlank() && !isTesting
                         Button(
                             onClick = {
                                 saveConfig()
@@ -228,14 +231,21 @@ fun WebDavSyncContent(
                                     isTesting = false
                                 }
                             },
-                            enabled = serverUrl.isNotBlank() && !isTesting,
-                            shape = RoundedCornerShape(12.dp)
+                            enabled = testEnabled,
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.Transparent,
+                                contentColor = Color.Black,
+                                disabledContainerColor = Color.Transparent,
+                                disabledContentColor = Color(0xFF999999)
+                            ),
+                            border = BorderStroke(1.dp, if (testEnabled) Color.Black else Color(0xFF999999))
                         ) {
                             if (isTesting) {
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(16.dp),
                                     strokeWidth = 2.dp,
-                                    color = MaterialTheme.colorScheme.onPrimary
+                                    color = Color(0xFF999999)
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                             }
@@ -325,6 +335,7 @@ fun WebDavSyncContent(
                     Spacer(modifier = Modifier.width(6.dp))
                     Text("上传到服务器")
                 }
+                val downloadEnabled = serverUrl.isNotBlank() && !isUploading && !isDownloading
                 Button(
                     onClick = {
                         saveConfig()
@@ -345,14 +356,21 @@ fun WebDavSyncContent(
                     modifier = Modifier
                         .weight(1f)
                         .height(48.dp),
-                    enabled = serverUrl.isNotBlank() && !isUploading && !isDownloading,
-                    shape = RoundedCornerShape(12.dp)
+                    enabled = downloadEnabled,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = Color.Black,
+                        disabledContainerColor = Color.Transparent,
+                        disabledContentColor = Color(0xFF999999)
+                    ),
+                    border = BorderStroke(1.dp, if (downloadEnabled) Color.Black else Color(0xFF999999))
                 ) {
                     if (isDownloading) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(18.dp),
                             strokeWidth = 2.dp,
-                            color = MaterialTheme.colorScheme.onPrimary
+                            color = Color(0xFF999999)
                         )
                     } else {
                         Icon(Icons.Default.CloudDownload, contentDescription = null, modifier = Modifier.size(18.dp))

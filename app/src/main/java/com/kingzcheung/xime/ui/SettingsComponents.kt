@@ -173,20 +173,14 @@ fun SettingsToggleItem(
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-        val isEink = MaterialTheme.colorScheme.primary == Color.Black
-        val switchColors = if (isEink) {
-            SwitchDefaults.colors(
-                checkedThumbColor = Color(0xFF333333),
-                checkedTrackColor = Color(0xFFBBBBBB),
-                uncheckedThumbColor = Color(0xFF888888),
-                uncheckedTrackColor = Color(0xFFE0E0E0)
-            )
-        } else {
-            SwitchDefaults.colors(
-                checkedThumbColor = MaterialTheme.colorScheme.primary,
-                checkedTrackColor = MaterialTheme.colorScheme.primaryContainer
-            )
-        }
+        val switchColors = SwitchDefaults.colors(
+            checkedThumbColor = Color.Black,
+            checkedTrackColor = Color.Transparent,
+            checkedBorderColor = Color.Black,
+            uncheckedThumbColor = Color(0xFF888888),
+            uncheckedTrackColor = Color.Transparent,
+            uncheckedBorderColor = Color(0xFF999999)
+        )
         Switch(
             checked = checked,
             onCheckedChange = onCheckedChange,

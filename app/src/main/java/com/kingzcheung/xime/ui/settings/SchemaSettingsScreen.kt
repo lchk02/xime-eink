@@ -3,7 +3,9 @@ package com.kingzcheung.xime.ui.settings
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.layout.Arrangement
@@ -301,7 +303,7 @@ fun SchemaSettingsContent(
                             expanded = showMenu,
                             onDismissRequest = { showMenu = false },
                             offset = DpOffset(0.dp, 4.dp),
-                            containerColor = Color.White,
+                            containerColor = if (isSystemInDarkTheme()) Color.Black else Color.White,
                             shape = RoundedCornerShape(12.dp)
                         ) {
                             DropdownMenuItem(
@@ -436,26 +438,27 @@ fun SchemaSettingsContent(
             }
         }
 
-        val isEink = MaterialTheme.colorScheme.primary == Color.Black
+        val deployEnabled = !uiState.isDeploying
         Button(
             onClick = { viewModel.deploySchema() },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 12.dp)
                 .height(48.dp),
-            enabled = !uiState.isDeploying,
+            enabled = deployEnabled,
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (isEink) Color(0xFFDDDDDD) else MaterialTheme.colorScheme.primary,
-                contentColor = if (isEink) Color.Black else MaterialTheme.colorScheme.onPrimary,
-                disabledContainerColor = if (isEink) Color(0xFFEEEEEE) else MaterialTheme.colorScheme.primary.copy(alpha = 0.38f),
-                disabledContentColor = if (isEink) Color(0xFF888888) else MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.38f)
-            )
+                containerColor = Color.Transparent,
+                contentColor = Color.Black,
+                disabledContainerColor = Color.Transparent,
+                disabledContentColor = Color(0xFF999999)
+            ),
+            border = BorderStroke(1.dp, if (deployEnabled) Color.Black else Color(0xFF999999))
         ) {
             if (uiState.isDeploying) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(20.dp),
                     strokeWidth = 2.dp,
-                    color = MaterialTheme.colorScheme.onPrimary
+                    color = Color(0xFF999999)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("正在部署...")
@@ -570,17 +573,14 @@ private fun SchemaToggleItem(
                 }
             }
 
-            val isEink = MaterialTheme.colorScheme.primary == Color.Black
-            val switchColors = if (isEink) {
-                SwitchDefaults.colors(
-                    checkedThumbColor = Color(0xFF333333),
-                    checkedTrackColor = Color(0xFFBBBBBB),
-                    uncheckedThumbColor = Color(0xFF888888),
-                    uncheckedTrackColor = Color(0xFFE0E0E0)
-                )
-            } else {
-                SwitchDefaults.colors()
-            }
+            val switchColors = SwitchDefaults.colors(
+                checkedThumbColor = Color.Black,
+                checkedTrackColor = Color.Transparent,
+                checkedBorderColor = Color.Black,
+                uncheckedThumbColor = Color(0xFF888888),
+                uncheckedTrackColor = Color.Transparent,
+                uncheckedBorderColor = Color(0xFF999999)
+            )
             Switch(
                 checked = enabled,
                 onCheckedChange = { onToggle() },

@@ -20,7 +20,6 @@ import androidx.compose.material.icons.twotone.Info
 import androidx.compose.material.icons.twotone.Keyboard
 import androidx.compose.material.icons.twotone.KeyboardAlt
 import androidx.compose.material.icons.twotone.Palette
-import androidx.compose.material.icons.twotone.Straighten
 import androidx.compose.material.icons.twotone.ToggleOn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -45,7 +44,6 @@ import androidx.compose.ui.unit.dp
 import com.kingzcheung.xime.settings.SettingsPreferences
 import com.kingzcheung.xime.ui.SettingsItem
 import com.kingzcheung.xime.ui.SettingsSection
-import com.kingzcheung.xime.ui.SettingsToggleItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -193,22 +191,7 @@ fun SettingsMainContent(
                         onClick = onNavigateToTheme,
                         showArrow = true
                     )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(start = 56.dp),
-                        thickness = 0.5.dp,
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                    )
-                    var showBottomButtons by remember { mutableStateOf(SettingsPreferences.showBottomButtons(context)) }
-                    SettingsToggleItem(
-                        icon = Icons.TwoTone.Straighten,
-                        title = "显示底部按钮",
-                        subtitle = "显示收回键盘和切换输入法按钮（部分系统自带）",
-                        checked = showBottomButtons,
-                        onCheckedChange = { newValue ->
-                            showBottomButtons = newValue
-                            SettingsPreferences.setShowBottomButtons(context, newValue)
-                        }
-                    )
+
                 })
             }
 

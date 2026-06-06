@@ -75,6 +75,7 @@ fun KeyboardView(
     darkMode: Int = 2,
     themeId: String = "eink",
     showBottomButtons: Boolean = false,
+    hideBottomSpace: Boolean = false,
     clipboardItems: List<ClipboardItem> = emptyList(),
     quickSendItems: List<ClipboardItem> = emptyList(),
     recentClipboardItems: List<ClipboardItem> = emptyList(),
@@ -342,11 +343,9 @@ fun KeyboardView(
                         )
                     }
                 }
-            } else if (!isLandscapeBottom) {
-                val bottomSpacer = (40 + bottomReduction).coerceAtLeast(0)
-                Spacer(modifier = Modifier.height(bottomSpacer.dp))
-            } else if (isLandscapeBottom) {
-                val bottomSpacer = (15 + bottomReduction).coerceAtLeast(0)
+            } else {
+                val baseSpacer = if (hideBottomSpace) 8 else if (isLandscapeBottom) 15 else 40
+                val bottomSpacer = (baseSpacer + bottomReduction).coerceAtLeast(0)
                 Spacer(modifier = Modifier.height(bottomSpacer.dp))
             }
         }

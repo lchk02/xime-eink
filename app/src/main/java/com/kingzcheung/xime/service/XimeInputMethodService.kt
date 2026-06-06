@@ -96,6 +96,7 @@ class XimeInputMethodService : InputMethodService(), LifecycleOwner, SavedStateR
             darkMode = SettingsPreferences.getDarkMode(this),
             themeId = SettingsPreferences.getKeyboardTheme(this),
             showBottomButtons = SettingsPreferences.showBottomButtons(this),
+            hideBottomSpace = SettingsPreferences.isHideBottomSpace(this),
             keyboardHeightDp = SettingsPreferences.getKeyboardHeightDp(this, isLandscape),
             keyboardBottomPaddingDp = SettingsPreferences.getKeyboardBottomPaddingDp(this),
             toolbarButtons = SettingsPreferences.getToolbarButtons(this)
@@ -106,7 +107,7 @@ class XimeInputMethodService : InputMethodService(), LifecycleOwner, SavedStateR
         val prefs = SettingsPreferences.getPrefsPublic(this)
         sharedPrefsListener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
             when (key) {
-                "dark_mode", "keyboard_theme", "show_bottom_buttons", "keyboard_height_dp", "keyboard_bottom_padding_dp" -> {
+                "dark_mode", "keyboard_theme", "show_bottom_buttons", "hide_bottom_space", "keyboard_height_dp", "keyboard_bottom_padding_dp" -> {
                     loadDarkModePreference()
                     Log.d(TAG, "Settings changed: $key, updated UI state")
                 }
@@ -394,6 +395,7 @@ class XimeInputMethodService : InputMethodService(), LifecycleOwner, SavedStateR
                             darkMode = state.darkMode,
                             themeId = state.themeId,
                             showBottomButtons = state.showBottomButtons,
+                            hideBottomSpace = state.hideBottomSpace,
                             keyboardHeightDp = keyboardHeight,
                             keyboardBottomPaddingDp = state.keyboardBottomPaddingDp,
                              clipboardItems = clipboardItemsState.value,

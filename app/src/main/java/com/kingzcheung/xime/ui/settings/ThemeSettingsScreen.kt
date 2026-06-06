@@ -27,8 +27,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kingzcheung.xime.ui.KeyboardThemeCard
+import com.kingzcheung.xime.ui.SettingsToggleItem
 import com.kingzcheung.xime.ui.ThemeCard
 import com.kingzcheung.xime.viewmodel.ThemeSettingsViewModel
+import androidx.compose.material.icons.twotone.Straighten
+import androidx.compose.material.icons.twotone.SwapVert
+import androidx.compose.material3.HorizontalDivider
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -166,6 +170,44 @@ fun ThemeSettingsContent(
                 item {
                     Spacer(modifier = Modifier.height(8.dp))
                 }
+            }
+            
+            item {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "键盘底部",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+
+            item {
+                SettingsToggleItem(
+                    icon = Icons.TwoTone.Straighten,
+                    title = "显示底部按钮",
+                    subtitle = "显示收回键盘和切换输入法按钮（部分系统自带）",
+                    checked = uiState.showBottomButtons,
+                    onCheckedChange = { viewModel.setShowBottomButtons(it) }
+                )
+            }
+
+            item {
+                HorizontalDivider(
+                    modifier = Modifier.padding(start = 56.dp),
+                    thickness = 0.5.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                )
+            }
+
+            item {
+                SettingsToggleItem(
+                    icon = Icons.TwoTone.SwapVert,
+                    title = "隐藏底部空白",
+                    subtitle = "缩小键盘底部预留空间，底部按键更贴近屏幕边缘",
+                    checked = uiState.hideBottomSpace,
+                    onCheckedChange = { viewModel.setHideBottomSpace(it) }
+                )
             }
             
             item {
