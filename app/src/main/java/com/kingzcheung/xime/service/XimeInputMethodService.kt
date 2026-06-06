@@ -361,6 +361,9 @@ class XimeInputMethodService : InputMethodService(), LifecycleOwner, SavedStateR
                 } else {
                     displayHeight
                 }
+                val bottomSpaceSaving = if (state.hideBottomSpace) {
+                    if (isLandscape) 7 else if (state.showBottomButtons) 0 else 32
+                } else 0
 
                 XimeTheme(darkTheme = isDarkTheme, themeId = state.themeId) {
                     Box(
@@ -370,7 +373,7 @@ class XimeInputMethodService : InputMethodService(), LifecycleOwner, SavedStateR
                                 if (state.showKeyboardResize)
                                     (maxHeightDp + 100).dp
                                 else
-                                    (keyboardHeight + state.keyboardBottomPaddingDp).dp
+                                    (keyboardHeight + state.keyboardBottomPaddingDp - bottomSpaceSaving).dp
                             )
                     ) {
                         Surface(
@@ -378,7 +381,7 @@ class XimeInputMethodService : InputMethodService(), LifecycleOwner, SavedStateR
                                 .align(androidx.compose.ui.Alignment.BottomCenter)
                                 .fillMaxWidth()
                                 .padding(bottom = 0.dp)
-                                .height(if (state.showKeyboardResize) (state.resizePreviewHeightDp + state.resizePreviewBottomPaddingDp).dp else (keyboardHeight + state.keyboardBottomPaddingDp).dp),
+                                .height(if (state.showKeyboardResize) (state.resizePreviewHeightDp + state.resizePreviewBottomPaddingDp).dp else (keyboardHeight + state.keyboardBottomPaddingDp - bottomSpaceSaving).dp),
                             color = MaterialTheme.colorScheme.surface
                         ) {
                         CompositionLocalProvider(LocalStretchFactor provides state.stretchFactor) {

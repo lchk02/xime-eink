@@ -36,7 +36,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -304,7 +303,8 @@ fun WebDavSyncContent(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                OutlinedButton(
+                val uploadEnabled = serverUrl.isNotBlank() && !isUploading && !isDownloading
+                Button(
                     onClick = {
                         saveConfig()
                         isUploading = true
@@ -321,13 +321,21 @@ fun WebDavSyncContent(
                     modifier = Modifier
                         .weight(1f)
                         .height(48.dp),
-                    enabled = serverUrl.isNotBlank() && !isUploading && !isDownloading,
-                    shape = RoundedCornerShape(12.dp)
+                    enabled = uploadEnabled,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = Color.Black,
+                        disabledContainerColor = Color.Transparent,
+                        disabledContentColor = Color(0xFF999999)
+                    ),
+                    border = BorderStroke(1.dp, if (uploadEnabled) Color.Black else Color(0xFF999999))
                 ) {
                     if (isUploading) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(18.dp),
-                            strokeWidth = 2.dp
+                            strokeWidth = 2.dp,
+                            color = Color(0xFF999999)
                         )
                     } else {
                         Icon(Icons.Default.CloudUpload, contentDescription = null, modifier = Modifier.size(18.dp))

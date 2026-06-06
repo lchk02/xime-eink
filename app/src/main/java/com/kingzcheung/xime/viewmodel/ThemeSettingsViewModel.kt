@@ -46,6 +46,12 @@ class ThemeSettingsViewModel(application: Application) : AndroidViewModel(applic
     
     fun setHideBottomSpace(hide: Boolean) {
         SettingsPreferences.setHideBottomSpace(context, hide)
-        _uiState.update { it.copy(hideBottomSpace = hide) }
+        _uiState.update {
+            if (hide) {
+                it.copy(hideBottomSpace = true, showBottomButtons = false)
+            } else {
+                it.copy(hideBottomSpace = false)
+            }
+        }
     }
 }

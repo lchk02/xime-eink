@@ -127,14 +127,19 @@ fun SettingsToggleItem(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     onClick: (() -> Unit)? = null,
-    showArrow: Boolean = false
+    showArrow: Boolean = false,
+    enabled: Boolean = true
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .then(
-                if (onClick != null) Modifier.clickable(onClick = onClick)
-                else Modifier.clickable { onCheckedChange(!checked) }
+                if (enabled) {
+                    if (onClick != null) Modifier.clickable(onClick = onClick)
+                    else Modifier.clickable { onCheckedChange(!checked) }
+                } else {
+                    Modifier
+                }
             )
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -143,13 +148,13 @@ fun SettingsToggleItem(
             modifier = Modifier
                 .size(40.dp)
                 .clip(RoundedCornerShape(10.dp))
-                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)),
+                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = if (enabled) 0.6f else 0.3f)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
+                tint = MaterialTheme.colorScheme.primary.copy(alpha = if (enabled) 1f else 0.38f),
                 modifier = Modifier.size(22.dp)
             )
         }
@@ -158,12 +163,13 @@ fun SettingsToggleItem(
             Text(
                 text = title,
                 style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Medium,
+                color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
             )
             Text(
                 text = subtitle,
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
             )
         }
         if (showArrow) {
@@ -184,6 +190,7 @@ fun SettingsToggleItem(
         Switch(
             checked = checked,
             onCheckedChange = onCheckedChange,
+            enabled = enabled,
             colors = switchColors
         )
     }

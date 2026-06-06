@@ -187,7 +187,8 @@ fun ThemeSettingsContent(
                     icon = Icons.TwoTone.Straighten,
                     title = "显示底部按钮",
                     subtitle = "显示收回键盘和切换输入法按钮（部分系统自带）",
-                    checked = uiState.showBottomButtons,
+                    checked = if (uiState.hideBottomSpace) false else uiState.showBottomButtons,
+                    enabled = !uiState.hideBottomSpace,
                     onCheckedChange = { viewModel.setShowBottomButtons(it) }
                 )
             }
