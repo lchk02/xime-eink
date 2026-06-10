@@ -188,7 +188,7 @@ fun AboutContent(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .then(if (isDarkTheme) Modifier.border(1.dp, Color.White, RoundedCornerShape(12.dp)) else Modifier),
+                        .then(Modifier.border(1.dp, if (isDarkTheme) Color.White else Color.Black, RoundedCornerShape(12.dp))),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
@@ -246,21 +246,22 @@ fun AboutContent(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             } else {
-                                IconButton(
-                                    onClick = { viewModel.checkForUpdate() },
-                                    enabled = !uiState.isChecking
+                                Row(
+                                    modifier = Modifier.clickable(enabled = !uiState.isChecking) { viewModel.checkForUpdate() },
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Refresh,
                                         contentDescription = "检查更新",
                                         tint = MaterialTheme.colorScheme.primary
                                     )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = "检查更新",
+                                        fontSize = 14.sp,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
                                 }
-                                Text(
-                                    text = "检查更新",
-                                    fontSize = 14.sp,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
                             }
                         }
                         
@@ -290,20 +291,12 @@ fun AboutContent(
                                     )
                                 }
                             }
-                            is UpdateResult.NoUpdate -> {
+                            is UpdateResult.NoUpdate, is UpdateResult.Error -> {
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    text = "已是最新版本",
+                                    text = "当前已是最新版本",
                                     fontSize = 13.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            is UpdateResult.Error -> {
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = "检查失败: ${result.message}",
-                                    fontSize = 13.sp,
-                                    color = MaterialTheme.colorScheme.error
                                 )
                             }
                             null -> {}
@@ -317,7 +310,7 @@ fun AboutContent(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .then(if (isDarkTheme) Modifier.border(1.dp, Color.White, RoundedCornerShape(12.dp)) else Modifier),
+                        .then(Modifier.border(1.dp, if (isDarkTheme) Color.White else Color.Black, RoundedCornerShape(12.dp))),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
@@ -410,7 +403,7 @@ fun AboutContent(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .then(if (isDarkTheme) Modifier.border(1.dp, Color.White, RoundedCornerShape(12.dp)) else Modifier),
+                        .then(Modifier.border(1.dp, if (isDarkTheme) Color.White else Color.Black, RoundedCornerShape(12.dp))),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
@@ -465,7 +458,7 @@ fun AboutContent(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .then(if (isDarkTheme) Modifier.border(1.dp, Color.White, RoundedCornerShape(12.dp)) else Modifier),
+                        .then(Modifier.border(1.dp, if (isDarkTheme) Color.White else Color.Black, RoundedCornerShape(12.dp))),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
@@ -476,7 +469,7 @@ fun AboutContent(
                             onClick = onNavigateToPrivacy
                         )
                         HorizontalDivider(
-                            modifier = Modifier.padding(start = 72.dp),
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                             thickness = 0.5.dp,
                             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                         )
@@ -486,7 +479,7 @@ fun AboutContent(
                             onClick = onNavigateToLicenses
                         )
                         HorizontalDivider(
-                            modifier = Modifier.padding(start = 72.dp),
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                             thickness = 0.5.dp,
                             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                         )
@@ -504,7 +497,7 @@ fun AboutContent(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .then(if (isDarkTheme) Modifier.border(1.dp, Color.White, RoundedCornerShape(12.dp)) else Modifier),
+                        .then(Modifier.border(1.dp, if (isDarkTheme) Color.White else Color.Black, RoundedCornerShape(12.dp))),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
@@ -623,7 +616,7 @@ fun PrivacyPolicyContent(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .then(if (isDarkTheme) Modifier.border(1.dp, Color.White, RoundedCornerShape(12.dp)) else Modifier),
+                        .then(Modifier.border(1.dp, if (isDarkTheme) Color.White else Color.Black, RoundedCornerShape(12.dp))),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
@@ -745,7 +738,7 @@ fun LicensesContent(
                         .clickable {
                             uriHandler.openUri(item.url)
                         }
-                        .then(if (isDarkTheme) Modifier.border(1.dp, Color.White, RoundedCornerShape(12.dp)) else Modifier),
+                        .then(Modifier.border(1.dp, if (isDarkTheme) Color.White else Color.Black, RoundedCornerShape(12.dp))),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                 ) {
                     Column(

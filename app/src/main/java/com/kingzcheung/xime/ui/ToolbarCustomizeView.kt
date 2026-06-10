@@ -108,7 +108,7 @@ fun ToolbarCustomizeView(
                 modifier = Modifier
                     .weight(1f)
                     .padding(end = 4.dp),
-                horizontalArrangement = Arrangement.End,
+                horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 val previewButtons = toolbarButtons.mapNotNull { ToolbarButton.fromId(it) }

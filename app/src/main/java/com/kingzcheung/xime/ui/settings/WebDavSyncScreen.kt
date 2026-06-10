@@ -142,7 +142,7 @@ fun WebDavSyncContent(
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
                 ),
-                modifier = Modifier.then(if (isDarkTheme) Modifier.border(1.dp, Color.White, RoundedCornerShape(12.dp)) else Modifier)
+                modifier = Modifier.then(Modifier.border(1.dp, if (isDarkTheme) Color.White else Color.Black, RoundedCornerShape(12.dp)))
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     OutlinedTextField(
@@ -292,7 +292,7 @@ fun WebDavSyncContent(
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
                     ),
-                    modifier = Modifier.then(if (isDarkTheme) Modifier.border(1.dp, Color.White, RoundedCornerShape(12.dp)) else Modifier)
+                    modifier = Modifier.then(Modifier.border(1.dp, if (isDarkTheme) Color.White else Color.Black, RoundedCornerShape(12.dp)))
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         if (isUploading || isDownloading) {

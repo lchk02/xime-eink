@@ -79,7 +79,8 @@ fun SettingsMainContent(
                 .fillMaxSize()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .padding(innerPadding)
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
@@ -94,7 +95,7 @@ fun SettingsMainContent(
                         }
                     )
                     HorizontalDivider(
-                        modifier = Modifier.padding(start = 56.dp),
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                         thickness = 0.5.dp,
                         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                     )
@@ -109,7 +110,7 @@ fun SettingsMainContent(
                         }
                     )
                     HorizontalDivider(
-                        modifier = Modifier.padding(start = 56.dp),
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                         thickness = 0.5.dp,
                         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                     )
@@ -168,7 +169,7 @@ fun SettingsMainContent(
                         showArrow = true
                     )
                     HorizontalDivider(
-                        modifier = Modifier.padding(start = 56.dp),
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                         thickness = 0.5.dp,
                         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                     )
@@ -220,7 +221,7 @@ fun SettingsMainContent(
                         showArrow = true
                     )
                     HorizontalDivider(
-                        modifier = Modifier.padding(start = 56.dp),
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                         thickness = 0.5.dp,
                         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                     )

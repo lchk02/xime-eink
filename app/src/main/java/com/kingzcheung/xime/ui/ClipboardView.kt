@@ -31,6 +31,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -65,6 +66,8 @@ fun ClipboardView(
     onRemoveFromQuickSend: (Long) -> Unit,
     onBack: (() -> Unit)? = null,
     onClipboardTabChange: ((Int) -> Unit)? = null,
+    onClearClipboard: (() -> Unit)? = null,
+    onClearQuickSend: (() -> Unit)? = null,
     bottomPaddingDp: Int = 0,
     modifier: Modifier = Modifier
 ) {
@@ -76,31 +79,34 @@ fun ClipboardView(
     val isLandscape =
         configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
 
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(backgroundColor)
-    ) {
-        // 标签切换栏（原在 CandidateBar 中，现搬到这里）
-        Row(
+    var showClearDialog by remember { mutableStateOf(false) }
+
+    Box(modifier = modifier.fillMaxSize()) {
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = if (isLandscape) 50.dp else 8.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .background(backgroundColor)
         ) {
-            Box(
+            // 标签切换栏（原在 CandidateBar 中，现搬到这里）
+            Row(
                 modifier = Modifier
-                    .size(28.dp)
-                    .border(1.dp, LocalKeyBorderColor.current, RoundedCornerShape(16.dp))
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(LocalKeyBackgroundColor.current)
-                    .clickable { onBack?.invoke() },
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .padding(horizontal = if (isLandscape) 50.dp else 8.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                    contentDescription = "关闭面板",
-                    tint = accentColor,
+                Box(
+                    modifier = Modifier
+                        .size(28.dp)
+                        .border(1.dp, LocalKeyBorderColor.current, RoundedCornerShape(16.dp))
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(LocalKeyBackgroundColor.current)
+                        .clickable { onBack?.invoke() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                        contentDescription = "关闭面板",
+                        tint = accentColor,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -147,13 +153,32 @@ fun ClipboardView(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "快捷发送",
+                            text = "常用语",
                             color = if (selectedTab == 1) Color.White else textColor,
                             fontSize = 11.sp,
                             fontWeight = if (selectedTab == 1) FontWeight.Medium else FontWeight.Normal
                         )
                     }
                 }
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            Box(
+                modifier = Modifier
+                    .size(28.dp)
+                    .border(1.dp, LocalKeyBorderColor.current, RoundedCornerShape(16.dp))
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(LocalKeyBackgroundColor.current)
+                    .clickable { showClearDialog = true },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "清空",
+                    tint = accentColor,
+                    modifier = Modifier.size(16.dp)
+                )
             }
         }
 
@@ -183,6 +208,52 @@ fun ClipboardView(
 
         // 底部留空（竖屏至少 40dp）
         Spacer(modifier = Modifier.height(if (isLandscape) 15.dp else max(bottomPaddingDp, 40).dp))
+    }
+
+    if (showClearDialog) {
+        val title = if (selectedTab == 0) "剪贴板" else "常用语"
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.5f))
+                .clickable { showClearDialog = false },
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(24.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .clickable(enabled = false) {}
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "${title}所有内容将被清空",
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(onClick = { showClearDialog = false }) {
+                        Text("取消", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    TextButton(onClick = {
+                        showClearDialog = false
+                        if (selectedTab == 0) onClearClipboard?.invoke()
+                        else onClearQuickSend?.invoke()
+                    }) {
+                        Text("清空", color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            }
+        }
+    }
     }
 }
 
@@ -249,7 +320,7 @@ fun QuickSendTabContent(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "快捷发送为空",
+                text = "常用语为空",
                 color = subTextColor,
                 fontSize = 13.sp
             )
@@ -319,7 +390,8 @@ fun CompactClipboardItem(
                     modifier = Modifier
                         .height(38.dp)
                         .clip(RoundedCornerShape(20.dp))
-                        .background(MaterialTheme.colorScheme.primaryContainer)
+                        .border(1.dp, LocalKeyBorderColor.current, RoundedCornerShape(20.dp))
+                        .background(LocalKeyBackgroundColor.current)
                         .clickable { showActions = false; onSplitWords() }
                         .padding(horizontal = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -328,23 +400,24 @@ fun CompactClipboardItem(
                     Icon(
                         Icons.Default.ContentCut,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = accentColor,
                         modifier = Modifier.size(16.dp)
                     )
                     Text(
                         "拆词",
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        color = accentColor,
                         fontSize = 14.sp
                     )
                 }
 
-                // 添加快捷发送：图标 + 文本
+                // 添加常用语：图标 + 文本
                 Row(
                     modifier = Modifier
                         .height(38.dp)
                         .clip(RoundedCornerShape(20.dp))
-                        .background(MaterialTheme.colorScheme.primaryContainer)
+                        .border(1.dp, LocalKeyBorderColor.current, RoundedCornerShape(20.dp))
+                        .background(LocalKeyBackgroundColor.current)
                         .clickable { showActions = false; onAddToQuickSend() }
                         .padding(horizontal = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -353,30 +426,31 @@ fun CompactClipboardItem(
                     Icon(
                         Icons.Outlined.StarBorder,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = accentColor,
                         modifier = Modifier.size(16.dp)
                     )
                     Text(
-                        "快捷",
+                        "常用",
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        color = accentColor,
                         fontSize = 14.sp
                     )
                 }
 
-                // 删除：仅图标 + 红色浅背景
+                // 删除
                 Box(
                     modifier = Modifier
-                        .size(38.dp)
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(MaterialTheme.colorScheme.errorContainer.copy(0.5f))
+                        .size(28.dp)
+                        .border(1.dp, LocalKeyBorderColor.current, RoundedCornerShape(16.dp))
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(LocalKeyBackgroundColor.current)
                         .clickable { showActions = false; onRemove() },
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
                         Icons.Default.Delete,
                         contentDescription = "删除",
-                        tint = MaterialTheme.colorScheme.error,
+                        tint = accentColor,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -389,7 +463,9 @@ fun CompactClipboardItem(
                 .fillMaxWidth()
                 .height(40.dp)
                 .offset { IntOffset((-slideOffset).roundToInt(), 0) }
-                .background(bgColor, RoundedCornerShape(8.dp))
+                .clip(RoundedCornerShape(8.dp))
+                .border(1.dp, LocalKeyBorderColor.current, RoundedCornerShape(8.dp))
+                .background(LocalKeyBackgroundColor.current)
                 .clickable {
                     if (showActions) showActions = false
                     else onSelect()
@@ -438,13 +514,14 @@ fun CompactQuickSendItem(
             .fillMaxWidth()
             .height(40.dp)
             .clip(RoundedCornerShape(8.dp))
-            .background(bgColor)
+            .border(1.dp, LocalKeyBorderColor.current, RoundedCornerShape(8.dp))
+            .background(LocalKeyBackgroundColor.current)
             .clickable { onSelect() },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             imageVector = Icons.Filled.Star,
-            contentDescription = "快捷发送",
+            contentDescription = "常用语",
             tint = accentColor,
             modifier = Modifier
                 .size(16.dp)
@@ -464,12 +541,12 @@ fun CompactQuickSendItem(
 
         IconButton(
             onClick = onRemove,
-            modifier = Modifier.size(32.dp)
+            modifier = Modifier.size(28.dp)
         ) {
             Icon(
                 imageVector = Icons.Filled.Delete,
                 contentDescription = "删除",
-                tint = subTextColor,
+                tint = accentColor,
                 modifier = Modifier.size(16.dp)
             )
         }

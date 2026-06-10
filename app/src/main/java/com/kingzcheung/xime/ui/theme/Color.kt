@@ -25,7 +25,7 @@ val CandidateBarBackgroundDark = Color(0xFF2D2D2D)
 
 // 文字颜色
 val KeyTextColor = Color(0xFF202124)
-val KeyTextColorDark = Color(0xFFE8EAED)
+val KeyTextColorDark = Color.White
 val CandidateTextColor = Color(0xFF1A73E8)
 val CandidateTextColorDark = Color(0xFF8AB4F8)
 

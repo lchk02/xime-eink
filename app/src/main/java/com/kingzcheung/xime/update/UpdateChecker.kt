@@ -24,8 +24,8 @@ sealed class UpdateResult {
 
 object UpdateChecker {
     private const val TAG = "UpdateChecker"
-    private const val GITHUB_OWNER = "ximeiorg"
-    private const val GITHUB_REPO = "Xime"
+    private const val GITHUB_OWNER = "lchk02"
+    private const val GITHUB_REPO = "xime-eink"
     private const val API_URL = "https://api.github.com/repos/$GITHUB_OWNER/$GITHUB_REPO/releases/latest"
     
     private val client = OkHttpClient.Builder()

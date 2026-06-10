@@ -103,7 +103,7 @@ fun SplitWordsView(
     text: String,
     backgroundColor: Color,
     onBack: () -> Unit,
-    onAddQuickSendText: (String) -> Unit,
+    onAddQuickSendText: ((String) -> Unit)? = null,
     onNavigateToQuickSend: (() -> Unit)? = null,
     onSelectChar: (String) -> Unit,
     onDeleteText: ((Int) -> Unit)? = null,
@@ -176,7 +176,7 @@ fun SplitWordsView(
                 onClick = {
                     val text = selectedIndices.joinToString("") { splitParts[it] }
                     if (text.isNotEmpty()) {
-                        onAddQuickSendText(text)
+                        onAddQuickSendText?.invoke(text)
                         onNavigateToQuickSend?.invoke()
                     }
                 }
@@ -188,7 +188,7 @@ fun SplitWordsView(
                     modifier = Modifier.size(16.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("添加到快捷发送", color = accentColor, fontSize = 13.sp)
+                Text("添加到常用语", color = accentColor, fontSize = 13.sp)
             }
         }
 

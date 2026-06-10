@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kingzcheung.xime.update.UpdateChecker
 import com.kingzcheung.xime.update.UpdateResult
+import com.kingzcheung.xime.util.FileLogger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,6 +25,10 @@ class AboutViewModel : ViewModel() {
             _uiState.update { it.copy(isChecking = true) }
             
             val result = UpdateChecker.checkForUpdate()
+            
+            if (result is UpdateResult.Error) {
+                FileLogger.e("UpdateCheck", "检查更新失败: ${result.message}")
+            }
             
             _uiState.update { it.copy(
                 updateState = result,

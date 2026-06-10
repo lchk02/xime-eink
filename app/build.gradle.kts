@@ -135,11 +135,6 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
-        // NDK 配置
-        ndk {
-            abiFilters += listOf("arm64-v8a", "x86_64")
-        }
-        
         // 构建信息
         buildConfigField("String", "GIT_HASH", "\"${getGitHash()}\"")
         buildConfigField("String", "BUILD_TIME", "\"${getBuildTime()}\"")
@@ -207,7 +202,7 @@ android {
             isEnable = true
             reset()
             include("arm64-v8a", "x86_64")
-            isUniversalApk = true
+            isUniversalApk = false
         }
     }
 }
@@ -269,6 +264,9 @@ dependencies {
 
     // ZXing for QR code generation
     implementation("com.google.zxing:core:3.5.3")
+
+    // Encrypted SharedPreferences
+    implementation(libs.security.crypto)
 
     // Ktor embedded server for wireless import
     implementation("io.ktor:ktor-server-core:3.1.2")

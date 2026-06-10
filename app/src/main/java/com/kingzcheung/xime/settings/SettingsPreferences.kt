@@ -19,7 +19,6 @@ object SettingsPreferences {
     
     private const val KEY_STT_ENABLED = "stt_enabled"
     private const val KEY_STT_PROVIDER = "stt_provider"
-    private const val KEY_FUNASR_API_KEY = "funasr_api_key"
     private const val KEY_STT_USE_LOCAL = "stt_use_local"
     private const val KEY_STT_KEEP_MODEL_IN_RAM = "stt_keep_model_in_ram"
     
@@ -46,7 +45,6 @@ object SettingsPreferences {
 
     private const val KEY_WEBDAV_URL = "webdav_url"
     private const val KEY_WEBDAV_USERNAME = "webdav_username"
-    private const val KEY_WEBDAV_PASSWORD = "webdav_password"
     private const val KEY_WEBDAV_PATH = "webdav_path"
 
     private const val KEY_SCHEMA_IMPORT_WARNING_DISMISSED = "schema_import_warning_dismissed"
@@ -160,11 +158,11 @@ object SettingsPreferences {
     }
     
     fun getFunAsrApiKey(context: Context): String {
-        return getPrefs(context).getString(KEY_FUNASR_API_KEY, "") ?: ""
+        return EncryptedSettings.getFunAsrApiKey(context)
     }
     
     fun setFunAsrApiKey(context: Context, apiKey: String) {
-        getPrefs(context).edit().putString(KEY_FUNASR_API_KEY, apiKey).apply()
+        EncryptedSettings.setFunAsrApiKey(context, apiKey)
     }
     
     fun isSttUseLocal(context: Context): Boolean {
@@ -245,11 +243,11 @@ object SettingsPreferences {
     }
 
     fun getWebDavPassword(context: Context): String {
-        return getPrefs(context).getString(KEY_WEBDAV_PASSWORD, "") ?: ""
+        return EncryptedSettings.getWebDavPassword(context)
     }
 
     fun setWebDavPassword(context: Context, password: String) {
-        getPrefs(context).edit().putString(KEY_WEBDAV_PASSWORD, password).apply()
+        EncryptedSettings.setWebDavPassword(context, password)
     }
 
     fun getWebDavPath(context: Context): String {

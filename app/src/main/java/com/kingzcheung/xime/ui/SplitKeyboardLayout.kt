@@ -3,6 +3,7 @@ package com.kingzcheung.xime.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -309,6 +310,12 @@ fun CompactSwipeableKeyButton(
     swipeFontSize: androidx.compose.ui.unit.TextUnit = 8.sp
 ) {
     var isPressed by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    var dragOffsetY by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(0f) }
+    var hasTriggeredSwipeUp by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    var hasTriggeredSwipeDown by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+
+    val swipeUpThreshold = -50f
+    val swipeDownThreshold = 50f
 
     fun darkenColor(color: Color, factor: Float = 0.15f): Color {
         return Color(
@@ -326,6 +333,43 @@ fun CompactSwipeableKeyButton(
             .border(1.dp, LocalKeyBorderColor.current, RoundedCornerShape(8.dp))
             .clip(RoundedCornerShape(8.dp))
             .background(if (isPressed) backgroundColor.copy(alpha = 0.7f) else backgroundColor)
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDragStart = {
+                        isPressed = true
+                        dragOffsetY = 0f
+                        hasTriggeredSwipeUp = false
+                        hasTriggeredSwipeDown = false
+                        onPress?.invoke()
+                    },
+                    onDragEnd = {
+                        if (!hasTriggeredSwipeUp && !hasTriggeredSwipeDown && dragOffsetY > swipeUpThreshold && dragOffsetY < swipeDownThreshold) {
+                            onClick()
+                        }
+                        isPressed = false
+                        dragOffsetY = 0f
+                        hasTriggeredSwipeUp = false
+                        hasTriggeredSwipeDown = false
+                    },
+                    onDragCancel = {
+                        isPressed = false
+                        dragOffsetY = 0f
+                        hasTriggeredSwipeUp = false
+                        hasTriggeredSwipeDown = false
+                    },
+                    onDrag = { _, dragAmount ->
+                        dragOffsetY += dragAmount.y
+
+                        if (dragOffsetY < swipeUpThreshold && !hasTriggeredSwipeUp && swipeText != null && onSwipe != null) {
+                            hasTriggeredSwipeUp = true
+                            onSwipe(swipeText)
+                        } else if (dragOffsetY > swipeDownThreshold && !hasTriggeredSwipeDown && swipeDownText != null && onSwipeDown != null) {
+                            hasTriggeredSwipeDown = true
+                            onSwipeDown(swipeDownText)
+                        }
+                    }
+                )
+            }
             .pointerInput(onClick) {
                 detectTapGestures(
                     onPress = {
@@ -334,7 +378,9 @@ fun CompactSwipeableKeyButton(
                         tryAwaitRelease()
                         isPressed = false
                     },
-                    onTap = { onClick() }
+                    onTap = {
+                        if (!hasTriggeredSwipeUp && !hasTriggeredSwipeDown) onClick()
+                    }
                 )
             },
         contentAlignment = Alignment.Center
@@ -352,7 +398,7 @@ fun CompactSwipeableKeyButton(
             if (!swipeText.isNullOrEmpty()) {
                 Text(
                     text = swipeText,
-                    color = textColor.copy(alpha = 0.5f),
+                    color = textColor,
                     fontSize = swipeFontSize,
                     fontWeight = FontWeight.Normal,
                     textAlign = TextAlign.End,
@@ -442,16 +488,18 @@ private fun SplitSpaceKey(
             maxLines = 1
         )
 
-        Text(
-            text = "空格",
-            color = textColor.copy(alpha = 0.3f),
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Normal,
-            textAlign = TextAlign.Start,
-            maxLines = 1,
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(start = 6.dp, bottom = 2.dp)
-        )
+        if (schemaName.isEmpty()) {
+            Text(
+                text = "空格",
+                color = textColor.copy(alpha = 0.3f),
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Normal,
+                textAlign = TextAlign.Start,
+                maxLines = 1,
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(start = 6.dp, bottom = 2.dp)
+            )
+        }
     }
 }

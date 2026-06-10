@@ -101,7 +101,7 @@ fun DictionarySettingsContent(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
                 ),
                 modifier = Modifier
-                    .then(if (isDarkTheme) Modifier.border(1.dp, Color.White, RoundedCornerShape(12.dp)) else Modifier)
+                    .then(Modifier.border(1.dp, if (isDarkTheme) Color.White else Color.Black, RoundedCornerShape(12.dp)))
             ) {
                 Row(
                     modifier = Modifier

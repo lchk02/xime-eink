@@ -202,25 +202,6 @@ fun CandidateBar(
 //                Spacer(modifier = Modifier.width(2.dp))
                 }
 
-                LazyRow(
-                    modifier = Modifier.weight(1f),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    itemsIndexed(displayCandidates) { index, candidate ->
-                        CandidateItem(
-                            text = candidate,
-                            index = index,
-                            onClick = { onCandidateSelect(index) },
-                            textColor = textColor,
-                            comment = candidateComments.getOrElse(index) { "" },
-                            isSelected = index == 0,
-                            accentColor = accentColor
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
-
                 if (!isComposing && inputText.isEmpty() && candidates.isEmpty() && toolbarActions.isNotEmpty()) {
                     toolbarActions.forEach { action ->
                         val interactionSource = remember { MutableInteractionSource() }
@@ -245,12 +226,33 @@ fun CandidateBar(
                             Icon(
                                 imageVector = action.button.icon,
                                 contentDescription = action.button.label,
-                                tint = if (isPressed) textColor.copy(alpha = 0.6f) else if (isDarkTheme) textColor else textColor.copy(alpha = 0.65f),
+                                tint = if (isPressed) textColor.copy(alpha = 0.6f) else if (isDarkTheme) textColor else Color.Black,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
                     }
+
+                    Spacer(modifier = Modifier.width(4.dp))
                 }
+
+                LazyRow(
+                    modifier = Modifier.weight(1f),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    itemsIndexed(displayCandidates) { index, candidate ->
+                        CandidateItem(
+                            text = candidate,
+                            index = index,
+                            onClick = { onCandidateSelect(index) },
+                            textColor = textColor,
+                            comment = candidateComments.getOrElse(index) { "" },
+                            isSelected = index == 0,
+                            accentColor = accentColor
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
 
                 if (currentRoute is KeyboardRoute.CandidatePage) {
                     Box(

@@ -89,7 +89,7 @@ fun MenuBar(
     
     val menuItems = listOf(
         MenuItem(rememberVectorPainter(Icons.AutoMirrored.TwoTone.Assignment), "剪贴板", onClipboard),
-        MenuItem(rememberVectorPainter(Icons.TwoTone.Quickreply), "快捷发送", onQuickSend),
+        MenuItem(rememberVectorPainter(Icons.TwoTone.Quickreply), "常用语", onQuickSend),
         MenuItem(rememberVectorPainter(Icons.TwoTone.SettingsOverscan), "键盘调节", onKeyboardResize),
         MenuItem(rememberVectorPainter(Icons.TwoTone.Settings), "设置", onSettings),
         MenuItem(rememberVectorPainter(when (darkMode) {

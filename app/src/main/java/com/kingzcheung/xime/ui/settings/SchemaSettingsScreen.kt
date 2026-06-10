@@ -332,7 +332,8 @@ fun SchemaSettingsContent(
                                 }
                             )
                             HorizontalDivider(
-                                modifier = Modifier.padding(horizontal = 12.dp),
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp),
+                                thickness = 0.5.dp,
                                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                             )
                             DropdownMenuItem(
@@ -510,7 +511,7 @@ private fun SchemaToggleItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { if (enabled && isCompiled) onSelect() }
-            .then(if (isDarkTheme) Modifier.border(1.dp, Color.White, RoundedCornerShape(12.dp)) else Modifier),
+            .border(1.dp, if (isDarkTheme) Color.White else Color.Black, RoundedCornerShape(12.dp)),
         colors = CardDefaults.cardColors(
             containerColor = if (isCurrent)
                 MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)

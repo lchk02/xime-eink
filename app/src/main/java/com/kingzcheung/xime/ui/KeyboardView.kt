@@ -98,8 +98,9 @@ fun KeyboardView(
     onClipboardRemove: ((Long) -> Unit)? = null,
     onClipboardSplitWords: ((Long) -> Unit)? = null,
     onAddToQuickSend: ((Long) -> Unit)? = null,
-    onAddQuickSendText: ((String) -> Unit)? = null,
     onRemoveFromQuickSend: ((Long) -> Unit)? = null,
+    onClearClipboard: (() -> Unit)? = null,
+    onClearQuickSend: (() -> Unit)? = null,
     onQuickSend: (() -> Unit)? = null,
     onKeyboardResize: (() -> Unit)? = null,
     onReloadConfig: (() -> Unit)? = null,
@@ -444,6 +445,8 @@ fun KeyboardView(
                     onRemoveFromQuickSend = { id -> onRemoveFromQuickSend?.invoke(id) },
                     onBack = { currentRoute = KeyboardRoute.Keyboard },
                     onClipboardTabChange = { currentRoute = KeyboardRoute.Clipboard(it) },
+                    onClearClipboard = { onClearClipboard?.invoke() },
+                    onClearQuickSend = { onClearQuickSend?.invoke() },
                     bottomPaddingDp = keyboardBottomPaddingDp,
                     modifier = Modifier.fillMaxWidth().fillMaxHeight()
                 )
@@ -492,7 +495,6 @@ fun KeyboardView(
                     text = (currentRoute as KeyboardRoute.SplitWords).text,
                     backgroundColor = keyboardBgColor,
                     onBack = { currentRoute = KeyboardRoute.Clipboard(clipboardTab) },
-                    onAddQuickSendText = { text -> onAddQuickSendText?.invoke(text) },
                     onNavigateToQuickSend = { currentRoute = KeyboardRoute.Clipboard(1) },
                     onSelectChar = { char -> onCommitText?.invoke(char) },
                     onDeleteText = { count -> onDeleteText?.invoke(count) },

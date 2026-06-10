@@ -62,8 +62,7 @@ fun SettingsSection(
             modifier = Modifier
                 .fillMaxWidth()
                 .then(
-                    if (isDarkTheme) Modifier.border(1.dp, Color.White, RoundedCornerShape(12.dp))
-                    else Modifier
+                    Modifier.border(1.dp, if (isDarkTheme) Color.White else Color.Black, RoundedCornerShape(12.dp))
                 ),
             shape = RoundedCornerShape(12.dp),
             color = MaterialTheme.colorScheme.surface,
@@ -399,8 +398,6 @@ fun ThemeCard(
                             color = MaterialTheme.colorScheme.primary,
                             shape = RoundedCornerShape(12.dp)
                         )
-                    } else if (isDarkTheme) {
-                        Modifier.border(1.dp, Color.White, RoundedCornerShape(12.dp))
                     } else {
                         Modifier
                     }
@@ -607,8 +604,6 @@ fun KeyboardThemeCard(
                             color = accentColor,
                             shape = RoundedCornerShape(12.dp)
                         )
-                    } else if (isDarkTheme) {
-                        Modifier.border(1.dp, Color.White, RoundedCornerShape(12.dp))
                     } else {
                         Modifier
                     }

@@ -1,6 +1,7 @@
 package com.kingzcheung.xime.ui.settings
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,24 +12,29 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kingzcheung.xime.ui.KeyboardThemeCard
 import com.kingzcheung.xime.ui.SettingsToggleItem
 import com.kingzcheung.xime.ui.ThemeCard
+import com.kingzcheung.xime.ui.theme.LocalIsDarkTheme
 import com.kingzcheung.xime.viewmodel.ThemeSettingsViewModel
 import androidx.compose.material.icons.twotone.Straighten
 import androidx.compose.material.icons.twotone.SwapVert
@@ -153,7 +159,7 @@ fun ThemeSettingsContent(
                             KeyboardThemeCard(
                                 theme = theme,
                                 isSelected = uiState.colorTheme == theme.id,
-                                isDark = uiState.darkMode == 1,
+                                isDark = LocalIsDarkTheme.current,
                                 onClick = {
                                     viewModel.setColorTheme(theme.id)
                                     onThemeChanged()
@@ -175,7 +181,7 @@ fun ThemeSettingsContent(
             item {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "键盘底部",
+                    text = "其它设置",
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(bottom = 4.dp)
@@ -183,34 +189,52 @@ fun ThemeSettingsContent(
             }
 
             item {
-                SettingsToggleItem(
-                    icon = Icons.TwoTone.Straighten,
-                    title = "显示底部按钮",
-                    subtitle = "显示收回键盘和切换输入法按钮（部分系统自带）",
-                    checked = if (uiState.hideBottomSpace) false else uiState.showBottomButtons,
-                    enabled = !uiState.hideBottomSpace,
-                    onCheckedChange = { viewModel.setShowBottomButtons(it) }
-                )
-            }
-
-            item {
-                SettingsToggleItem(
-                    icon = Icons.TwoTone.SwapVert,
-                    title = "隐藏底部空白",
-                    subtitle = "缩小键盘底部预留空间，底部按键更贴近屏幕边缘",
-                    checked = uiState.hideBottomSpace,
-                    onCheckedChange = { viewModel.setHideBottomSpace(it) }
-                )
-            }
-
-            item {
-                SettingsToggleItem(
-                    icon = Icons.TwoTone.ArrowUpward,
-                    title = "隐藏上划符号",
-                    subtitle = "隐藏按键上方的小字上划提示，上划功能不受影响",
-                    checked = uiState.hideSwipeSymbols,
-                    onCheckedChange = { viewModel.setHideSwipeSymbols(it) }
-                )
+                val isDarkTheme = LocalIsDarkTheme.current
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .then(
+                            Modifier.border(1.dp, if (isDarkTheme) Color.White else Color.Black, RoundedCornerShape(12.dp))
+                        ),
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    shadowElevation = 0.dp
+                ) {
+                    Column {
+                        SettingsToggleItem(
+                            icon = Icons.TwoTone.Straighten,
+                            title = "显示底部按钮",
+                            subtitle = "显示收回键盘和切换输入法按钮（部分系统自带）",
+                            checked = if (uiState.hideBottomSpace) false else uiState.showBottomButtons,
+                            enabled = !uiState.hideBottomSpace,
+                            onCheckedChange = { viewModel.setShowBottomButtons(it) }
+                        )
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                            thickness = 0.5.dp,
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                        )
+                        SettingsToggleItem(
+                            icon = Icons.TwoTone.SwapVert,
+                            title = "隐藏底部空白",
+                            subtitle = "缩小键盘底部预留空间，底部按键更贴近屏幕边缘",
+                            checked = uiState.hideBottomSpace,
+                            onCheckedChange = { viewModel.setHideBottomSpace(it) }
+                        )
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                            thickness = 0.5.dp,
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                        )
+                        SettingsToggleItem(
+                            icon = Icons.TwoTone.ArrowUpward,
+                            title = "隐藏上划符号",
+                            subtitle = "隐藏按键上方的小字上划提示，上划功能不受影响",
+                            checked = uiState.hideSwipeSymbols,
+                            onCheckedChange = { viewModel.setHideSwipeSymbols(it) }
+                        )
+                    }
+                }
             }
             
             item {

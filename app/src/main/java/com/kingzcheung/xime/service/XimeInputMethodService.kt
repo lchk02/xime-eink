@@ -12,12 +12,12 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
 import android.widget.FrameLayout
 import android.widget.Toast
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.CompositionLocalProvider
@@ -387,7 +387,14 @@ class XimeInputMethodService : InputMethodService(), LifecycleOwner, SavedStateR
                             modifier = Modifier
                                 .align(androidx.compose.ui.Alignment.BottomCenter)
                                 .fillMaxWidth()
-                                .border(1.dp, if (isDarkTheme) Color.White else Color.Black, RoundedCornerShape(0.dp))
+                                .drawBehind {
+                                    drawLine(
+                                        color = if (isDarkTheme) Color.White else Color.Black,
+                                        start = Offset(0f, 0f),
+                                        end = Offset(size.width, 0f),
+                                        strokeWidth = 1.dp.toPx()
+                                    )
+                                }
                                 .padding(bottom = 0.dp)
                                 .height(if (state.showKeyboardResize) (state.resizePreviewHeightDp + state.resizePreviewBottomPaddingDp).dp else (keyboardHeight + state.keyboardBottomPaddingDp - bottomSpaceSaving).dp),
                             color = MaterialTheme.colorScheme.surface
@@ -457,11 +464,14 @@ class XimeInputMethodService : InputMethodService(), LifecycleOwner, SavedStateR
                             onAddToQuickSend = { id ->
                                 addToQuickSend(id)
                             },
-                            onAddQuickSendText = { text ->
-                                clipboardManager.addQuickSendItem(text)
-                            },
                             onRemoveFromQuickSend = { id ->
                                 removeFromQuickSend(id)
+                            },
+                            onClearClipboard = {
+                                clipboardManager.clearAll()
+                            },
+                            onClearQuickSend = {
+                                clipboardManager.clearQuickSend()
                             },
                             onQuickSend = {
                                 Log.d(TAG, "QuickSend clicked")
@@ -799,6 +809,11 @@ class XimeInputMethodService : InputMethodService(), LifecycleOwner, SavedStateR
                         withContext(Dispatchers.Main) {
                             sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL)
                         }
+                        uiState.value = uiState.value.copy(
+                            candidates = emptyArray(),
+                            candidateComments = emptyArray(),
+                            isShowingRecentClipboard = false
+                        )
                     }
                 }
                 "clear_composition" -> {
@@ -1259,7 +1274,6 @@ class XimeInputMethodService : InputMethodService(), LifecycleOwner, SavedStateR
             updateUI()
         }
         commitText(text)
-        clipboardManager.copyToSystemClipboard(text)
     }
 
     private fun commitClipboardText(text: String) {

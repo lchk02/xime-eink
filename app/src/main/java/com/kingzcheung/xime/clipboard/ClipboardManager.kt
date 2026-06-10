@@ -226,6 +226,11 @@ class ClipboardManager private constructor(private val context: Context) {
         _clipboardItems.value = pinnedItems
         saveItems()
     }
+
+    fun clearQuickSend() {
+        _quickSendItems.value = emptyList()
+        saveQuickSendItems()
+    }
     
     fun addToQuickSend(id: Long) {
         val clipboardItem = _clipboardItems.value.find { it.id == id }
