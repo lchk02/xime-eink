@@ -1,6 +1,7 @@
 package com.kingzcheung.xime.ui.settings
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,12 +43,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kingzcheung.xime.settings.DictEntry
+import com.kingzcheung.xime.ui.theme.LocalIsDarkTheme
 import com.kingzcheung.xime.viewmodel.DictionarySettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,6 +61,7 @@ fun DictionarySettingsContent(
     val viewModel: DictionarySettingsViewModel = viewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showSchemaMenu by remember { mutableStateOf(false) }
+    val isDarkTheme = LocalIsDarkTheme.current
 
     Column(
         modifier = Modifier
@@ -95,7 +99,9 @@ fun DictionarySettingsContent(
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-                )
+                ),
+                modifier = Modifier
+                    .then(if (isDarkTheme) Modifier.border(1.dp, Color.White, RoundedCornerShape(12.dp)) else Modifier)
             ) {
                 Row(
                     modifier = Modifier

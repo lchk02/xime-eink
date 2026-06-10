@@ -5,11 +5,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import com.kingzcheung.xime.settings.SettingsPreferences
 
 // ========== 统一主题系统 ==========
+
+val LocalIsDarkTheme = compositionLocalOf { false }
 
 @Composable
 fun XimeTheme(
@@ -49,7 +53,7 @@ fun XimeTheme(
         onSecondary = Color(0xFFE0E0E0),
         tertiary = theme.primaryContainerDark,
         onTertiary = Color(0xFFE0E0E0),
-        background = Color(0xFF1C1B1F),
+        background = Color.Black,
         onBackground = Color(0xFFE6E1E5),
         surface = theme.surfaceDark,
         onSurface = Color(0xFFE0E0E0),
@@ -59,8 +63,10 @@ fun XimeTheme(
         outlineVariant = Color(0xFF444444)
     )
 
-    MaterialTheme(
-        colorScheme = if (darkTheme) darkScheme else lightScheme,
-        content = content
-    )
+    CompositionLocalProvider(LocalIsDarkTheme provides darkTheme) {
+        MaterialTheme(
+            colorScheme = if (darkTheme) darkScheme else lightScheme,
+            content = content
+        )
+    }
 }

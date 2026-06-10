@@ -5,6 +5,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.layout.Arrangement
@@ -73,6 +74,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kingzcheung.xime.settings.SchemaManager
 import com.kingzcheung.xime.settings.SchemaMeta
 import com.kingzcheung.xime.settings.SettingsPreferences
+import com.kingzcheung.xime.ui.theme.LocalIsDarkTheme
 import com.kingzcheung.xime.viewmodel.SchemaSettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -484,6 +486,7 @@ private fun SchemaToggleItem(
 ) {
     val context = LocalContext.current
     var showDeleteConfirm by remember { mutableStateOf(false) }
+    val isDarkTheme = LocalIsDarkTheme.current
 
     if (showDeleteConfirm) {
         AlertDialog(
@@ -506,7 +509,8 @@ private fun SchemaToggleItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { if (enabled && isCompiled) onSelect() },
+            .clickable { if (enabled && isCompiled) onSelect() }
+            .then(if (isDarkTheme) Modifier.border(1.dp, Color.White, RoundedCornerShape(12.dp)) else Modifier),
         colors = CardDefaults.cardColors(
             containerColor = if (isCurrent)
                 MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)

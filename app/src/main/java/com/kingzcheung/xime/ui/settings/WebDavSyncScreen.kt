@@ -2,6 +2,8 @@ package com.kingzcheung.xime.ui.settings
 
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -58,6 +60,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.kingzcheung.xime.settings.SettingsPreferences
 import com.kingzcheung.xime.settings.WebDavSyncHelper
+import com.kingzcheung.xime.ui.theme.LocalIsDarkTheme
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,6 +70,7 @@ fun WebDavSyncContent(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val isDarkTheme = LocalIsDarkTheme.current
 
     var serverUrl by remember { mutableStateOf(SettingsPreferences.getWebDavUrl(context)) }
     var username by remember { mutableStateOf(SettingsPreferences.getWebDavUsername(context)) }
@@ -99,7 +103,9 @@ fun WebDavSyncContent(
     }
 
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
     ) {
         TopAppBar(
             title = { Text("WebDAV 同步", style = MaterialTheme.typography.titleMedium) },
@@ -135,7 +141,8 @@ fun WebDavSyncContent(
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-                )
+                ),
+                modifier = Modifier.then(if (isDarkTheme) Modifier.border(1.dp, Color.White, RoundedCornerShape(12.dp)) else Modifier)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     OutlinedTextField(
@@ -284,7 +291,8 @@ fun WebDavSyncContent(
                     shape = RoundedCornerShape(12.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-                    )
+                    ),
+                    modifier = Modifier.then(if (isDarkTheme) Modifier.border(1.dp, Color.White, RoundedCornerShape(12.dp)) else Modifier)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         if (isUploading || isDownloading) {

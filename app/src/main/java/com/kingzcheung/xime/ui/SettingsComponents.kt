@@ -43,12 +43,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kingzcheung.xime.settings.SchemaInfo
 import com.kingzcheung.xime.ui.theme.KeyboardColorScheme
+import com.kingzcheung.xime.ui.theme.LocalIsDarkTheme
 
 @Composable
 fun SettingsSection(
     title: String,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val isDarkTheme = LocalIsDarkTheme.current
     Column {
         Text(
             text = title,
@@ -57,7 +59,12 @@ fun SettingsSection(
             modifier = Modifier.padding(bottom = 8.dp)
         )
         Surface(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(
+                    if (isDarkTheme) Modifier.border(1.dp, Color.White, RoundedCornerShape(12.dp))
+                    else Modifier
+                ),
             shape = RoundedCornerShape(12.dp),
             color = MaterialTheme.colorScheme.surface,
             shadowElevation = 0.dp
@@ -371,6 +378,7 @@ fun ThemeCard(
     modifier: Modifier = Modifier,
     isSystem: Boolean = false
 ) {
+    val isDarkTheme = LocalIsDarkTheme.current
     val backgroundColor = if (isDark) Color(0xFF202124) else Color(0xFFE8EAED)
     val keyColor = if (isDark) Color(0xFF35363A) else Color(0xFFFFFFFF)
     val specialKeyColor = if (isDark) Color(0xFF4A4A4A) else Color(0xFFD3E3FD)
@@ -391,6 +399,8 @@ fun ThemeCard(
                             color = MaterialTheme.colorScheme.primary,
                             shape = RoundedCornerShape(12.dp)
                         )
+                    } else if (isDarkTheme) {
+                        Modifier.border(1.dp, Color.White, RoundedCornerShape(12.dp))
                     } else {
                         Modifier
                     }
@@ -576,6 +586,7 @@ fun KeyboardThemeCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isDarkTheme = LocalIsDarkTheme.current
     val backgroundColor = if (isDark) Color(0xFF202124) else Color(0xFFE8EAED)
     val keyColor = if (isDark) Color(0xFF35363A) else Color(0xFFFFFFFF)
     val specialKeyColor = if (isDark) theme.specialKeyDark else theme.specialKeyLight
@@ -596,6 +607,8 @@ fun KeyboardThemeCard(
                             color = accentColor,
                             shape = RoundedCornerShape(12.dp)
                         )
+                    } else if (isDarkTheme) {
+                        Modifier.border(1.dp, Color.White, RoundedCornerShape(12.dp))
                     } else {
                         Modifier
                     }
